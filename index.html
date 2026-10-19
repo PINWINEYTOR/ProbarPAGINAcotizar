@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f5f8">
+  <title>Generador de contrato de arrendamiento</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", Arial, sans-serif;
+      color: #192331;
+      background: #f3f5f8;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body { margin: 0; }
+
+    .topbar {
+      padding: 22px max(24px, calc((100% - 1440px) / 2));
+      background: #123b5d;
+      color: #fff;
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 650;
+    }
+
+    .topbar p {
+      margin: 6px 0 0;
+      color: #d6e4ef;
+      font-size: .92rem;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(320px, 440px) minmax(480px, 760px);
+      gap: 24px;
+      align-items: start;
+      max-width: 1440px;
+      margin: 28px auto;
+      padding: 0 24px;
+    }
+
+    .panel {
+      border: 1px solid #e0e5eb;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 18px #16324f0d;
+    }
+
+    .form-panel { padding: 22px; }
+
+    .panel h2 {
+      margin: 0 0 18px;
+      font-size: 1.1rem;
+    }
+
+    fieldset {
+      min-width: 0;
+      margin: 0 0 20px;
+      padding: 0;
+      border: 0;
+    }
+
+    legend {
+      width: 100%;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e8edf2;
+      color: #315b7d;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    .field { margin-bottom: 12px; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #344255;
+      font-size: .82rem;
+      font-weight: 600;
+    }
+
+    input, textarea {
+      width: 100%;
+      min-height: 40px;
+      padding: 9px 10px;
+      border: 1px solid #cbd4de;
+      border-radius: 6px;
+      background: #fff;
+      color: #192331;
+      font: inherit;
+      font-size: .9rem;
+    }
+
+    textarea {
+      min-height: 78px;
+      resize: vertical;
+    }
+
+    input:focus, textarea:focus {
+      border-color: #2c77ac;
+      outline: 3px solid #2c77ac24;
+    }
+
+    .hint {
+      margin: 5px 0 0;
+      color: #667587;
+      font-size: .76rem;
+    }
+
+    .actions {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      gap: 10px;
+      padding: 14px 0 0;
+      background: #fff;
+    }
+
+    button {
+      min-height: 42px;
+      padding: 10px 15px;
+      border: 0;
+      border-radius: 6px;
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .primary { flex: 1; background: #176b9c; color: #fff; }
+    .primary:hover { background: #10577f; }
+    .secondary { background: #eaf0f5; color: #28445d; }
+    .secondary:hover { background: #dce6ee; }
+
+    .preview-panel { padding: 24px; }
+
+    .preview-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin: 0 0 14px;
+      color: #344255;
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    .preview-heading span {
+      color: #778494;
+      font-size: .78rem;
+      font-weight: 400;
+    }
+
+    .document {
+      min-height: 860px;
+      padding: 58px 62px;
+      border: 1px solid #dfe4e9;
+      background: #fff;
+      box-shadow: 0 3px 12px #16324f0d;
+      color: #111;
+      font-family: "Times New Roman", serif;
+      font-size: 12pt;
+      line-height: 1.45;
+    }
+
+    .document h2 {
+      margin: 0 0 20px;
+      text-align: center;
+      font-family: "Times New Roman", serif;
+      font-size: 15pt;
+    }
+
+    .document h3 {
+      margin: 22px 0 8px;
+      font-family: "Times New Roman", serif;
+      font-size: 12pt;
+    }
+
+    .document p { margin: 8px 0; }
+    .document .expediente { margin: 0 0 18px; }
+    .document .signature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 36px;
+      margin-top: 72px;
+      text-align: center;
+    }
+    .document .signature-line {
+      padding-top: 8px;
+      border-top: 1px solid #111;
+    }
+    .document .signature-line strong,
+    .document .signature-line span { display: block; }
+    .document .signature-line span { min-height: 1.4em; }
+
+    @media (max-width: 1000px) {
+      main { grid-template-columns: minmax(300px, 430px) minmax(0, 1fr); }
+      .document { padding: 42px 36px; }
+    }
+
+    @media (max-width: 760px) {
+      main { grid-template-columns: 1fr; margin-top: 18px; padding: 0 14px; }
+      .topbar { padding: 18px 16px; }
+      .document { min-height: 0; padding: 32px 24px; }
+    }
+
+    @media print {
+      @page { size: letter; margin: 0.7in; }
+      html, body { background: #fff; }
+      .topbar, .form-panel, .preview-heading { display: none !important; }
+      main {
+        display: block;
+        max-width: none;
+        margin: 0;
+        padding: 0;
+      }
+      .preview-panel {
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .document {
+        min-height: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+        font-size: 11pt;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Contrato de arrendamiento</h1>
+    <p>Completa los datos y revisa el documento antes de guardarlo como PDF.</p>
+  </header>
+
+  <main>
+    <section class="panel form-panel" aria-labelledby="form-title">
+      <h2 id="form-title">Datos del contrato</h2>
+      <form id="contract-form">
+        <fieldset>
+          <legend>Arrendador y expediente</legend>
+          <div class="field">
+            <label for="landlord">Nombre del arrendador (persona o empresa)</label>
+            <input id="landlord" name="landlord" autocomplete="organization" required>
+          </div>
+          <div class="field">
+            <label for="case-number">N.º de expediente</label>
+            <input id="case-number" name="caseNumber" required>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Datos del cliente</legend>
+          <div class="field">
+            <label for="date-time">Fecha y hora del contrato</label>
+            <input id="date-time" name="dateTime" type="datetime-local" required>
+            <p class="hint">Se completa automáticamente con la fecha y hora actuales; puedes cambiarlas.</p>
+          </div>
+          <div class="field">
+            <label for="customer">Nombre del cliente</label>
+            <input id="customer" name="customer" autocomplete="name" required>
+          </div>
+          <div class="field">
+            <label for="address">Domicilio</label>
+            <textarea id="address" name="address" autocomplete="street-address" required></textarea>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="phone">Teléfono fijo</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" required>
+            </div>
+            <div class="field">
+              <label for="reference-phone">Teléfono de referencia</label>
+              <input id="reference-phone" name="referencePhone" type="tel" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="reference">Referencia personal</label>
+            <input id="reference" name="reference" required>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Artículos y condiciones</legend>
+          <div class="field">
+            <label for="items">Artículos a rentar y cantidad</label>
+            <textarea id="items" name="items" required></textarea>
+          </div>
+          <div class="field">
+            <label for="duration">Duración del contrato</label>
+            <input id="duration" name="duration" placeholder="Ej.: 2 días" required>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="price">Precio total (MXN)</label>
+              <input id="price" name="price" type="number" min="0.01" step="0.01" inputmode="decimal" required>
+            </div>
+            <div class="field">
+              <label for="cleaning-fee">Cuota por limpieza (MXN)</label>
+              <input id="cleaning-fee" name="cleaningFee" type="number" min="0" step="0.01" value="0" inputmode="decimal" required>
+            </div>
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button class="primary" type="button" id="pdf-button">Guardar / descargar PDF</button>
+          <button class="secondary" type="reset">Limpiar</button>
+        </div>
+        <p class="hint">Se abrirá el diálogo de impresión: selecciona «Guardar como PDF» para descargarlo.</p>
+      </form>
+    </section>
+
+    <section class="panel preview-panel" aria-label="Vista previa del contrato">
+      <div class="preview-heading">
+        Vista previa
+        <span>Se actualiza al completar el formulario</span>
+      </div>
+      <article id="document" class="document"></article>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("contract-form");
+    const preview = document.getElementById("document");
+    const dateTimeInput = document.getElementById("date-time");
+    const pdfButton = document.getElementById("pdf-button");
+    const money = new Intl.NumberFormat("es-MX", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    function localDateTimeValue(date) {
+      const offset = date.getTimezoneOffset() * 60000;
+      return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[character]);
+    }
+
+    function field(name) {
+      return escapeHtml(new FormData(form).get(name) || "");
+    }
+
+    function formattedDateTime(value) {
+      if (!value) return { date: "", time: "" };
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return { date: "", time: "" };
+      return {
+        date: new Intl.DateTimeFormat("es-MX", {
+          day: "numeric",
+          month: "long",
+          year: "numeric"
+        }).format(date),
+        time: new Intl.DateTimeFormat("es-MX", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true
+        }).format(date)
+      };
+    }
+
+    function formattedMoney(name) {
+      const value = form.elements.namedItem(name).value;
+      return value === "" ? "" : money.format(Number(value));
+    }
+
+    function render() {
+      const dateTime = formattedDateTime(dateTimeInput.value);
+      preview.innerHTML = `
+        <h2>CONTRATO DE ARRENDAMIENTO DE BIENES MUEBLES</h2>
+        <p class="expediente"><strong>No. de expediente:</strong> ${field("caseNumber")}</p>
+        <p>En la ciudad de Tepic, Nayarit, el presente documento hace constar el CONTRATO DE ARRENDAMIENTO que celebran por una parte la empresa o persona física prestadora del servicio, en adelante denominada "EL ARRENDADOR", y por la otra parte el cliente, en adelante denominado "EL ARRENDATARIO", el cual se rige bajo las siguientes declaraciones y cláusulas:</p>
+        <h3>DECLARACIONES Y DATOS DEL CLIENTE</h3>
+        <p><strong>Fecha:</strong> ${escapeHtml(dateTime.date)} &nbsp; <strong>Hora:</strong> ${escapeHtml(dateTime.time)}<br>
+        <strong>Nombre del cliente:</strong> ${field("customer")}<br>
+        <strong>Domicilio:</strong> ${field("address").replace(/\n/g, "<br>")}<br>
+        <strong>Teléfono fijo:</strong> ${field("phone")}<br>
+        <strong>Referencia personal:</strong> ${field("reference")}<br>
+        <strong>Teléfono de la ref. personal:</strong> ${field("referencePhone")}</p>
+        <h3>CLÁUSULAS</h3>
+        <p><strong>PRIMERA. - OBJETO DEL CONTRATO:</strong> EL ARRENDADOR entrega en calidad de arrendamiento a EL ARRENDATARIO, y este último recibe de conformidad, los siguientes artículos:<br>
+        <strong>Artículos a rentar y cantidad:</strong> ${field("items").replace(/\n/g, "<br>")}</p>
+        <p><strong>SEGUNDA. - DURACIÓN DEL CONTRATO:</strong> El presente contrato tendrá una duración de: ${field("duration")}, comenzando a partir de la fecha y hora señaladas en las declaraciones de este documento.</p>
+        <p><strong>TERCERA. - PRECIO Y CONDICIONES DE PAGO:</strong> EL ARRENDATARIO se obliga a pagar a EL ARRENDADOR por concepto de renta de los artículos mencionados, la cantidad total de: ${escapeHtml(formattedMoney("price"))} MXN.</p>
+        <p><strong>CUARTA. - CUIDADO Y MANTENIMIENTO:</strong> EL ARRENDATARIO se compromete a hacer buen uso de los bienes arrendados y a devolverlos en las mismas condiciones en que los recibe. En caso de devolver los artículos con daños, suciedad excesiva o requerir mantenimiento correctivo, se aplicará una Cuota por limpieza en caso de incumplimiento por la cantidad de: ${escapeHtml(formattedMoney("cleaningFee"))} MXN.</p>
+        <p><strong>QUINTA. - JURISDICCIÓN:</strong> Para la interpretación y cumplimiento de este contrato, las partes se someten a la jurisdicción y competencia de los tribunales correspondientes, renunciando a cualquier otro fuero que pudiera corresponderles por razón de su domicilio presente o futuro.</p>
+        <div class="signature-row">
+          <div class="signature-line"><strong>EL ARRENDADOR</strong><span>${field("landlord")}</span></div>
+          <div class="signature-line"><strong>EL ARRENDATARIO</strong><span>${field("customer")}</span></div>
+        </div>`;
+    }
+
+    dateTimeInput.value = localDateTimeValue(new Date());
+    form.addEventListener("input", render);
+    form.addEventListener("change", render);
+    form.addEventListener("reset", () => {
+      setTimeout(() => {
+        dateTimeInput.value = localDateTimeValue(new Date());
+        render();
+      }, 0);
+    });
+    pdfButton.addEventListener("click", () => {
+      if (!form.reportValidity()) return;
+      window.print();
+    });
+    render();
+  </script>
+</body>
+</html>
