@@ -161,6 +161,18 @@
                             <label for="clienteCot_celosia">Cliente (Nombre)</label>
                             <input type="text" id="clienteCot_celosia" placeholder="Nombre del cliente">
                         </div>
+                        <div class="form-group">
+                            <label for="telefonoCot_celosia">Teléfono</label>
+                            <input type="tel" id="telefonoCot_celosia" placeholder="Ej: +52 311 123 4567">
+                        </div>
+                        <div class="form-group">
+                            <label for="correoCot_celosia">Correo</label>
+                            <input type="text" id="correoCot_celosia" placeholder="cliente@ejemplo.com (opcional)">
+                        </div>
+                        <div class="form-group">
+                            <label for="atiendeCot_celosia">Atiende (Nombre)</label>
+                            <input type="text" id="atiendeCot_celosia" placeholder="Nombre de la persona que atiende">
+                        </div>
                     </div>
 
                     <div style="margin-top:16px;padding:16px;background:#fff8ef;border:1px solid #ffd9a0;border-radius:8px;">
@@ -269,6 +281,18 @@
                             <label for="clienteCot_bordado">Cliente (Nombre)</label>
                             <input type="text" id="clienteCot_bordado" placeholder="Nombre del cliente">
                         </div>
+                        <div class="form-group">
+                            <label for="telefonoCot_bordado">Teléfono</label>
+                            <input type="tel" id="telefonoCot_bordado" placeholder="Ej: +52 311 123 4567">
+                        </div>
+                        <div class="form-group">
+                            <label for="correoCot_bordado">Correo</label>
+                            <input type="text" id="correoCot_bordado" placeholder="cliente@ejemplo.com (opcional)">
+                        </div>
+                        <div class="form-group">
+                            <label for="atiendeCot_bordado">Atiende (Nombre)</label>
+                            <input type="text" id="atiendeCot_bordado" placeholder="Nombre de la persona que atiende">
+                        </div>
                     </div>
 
                     <div style="margin-top:12px;">
@@ -355,6 +379,13 @@
 
         function formatMoney(v) {
             return '$' + (Number(v) || 0).toFixed(2);
+        }
+
+        function getCotFieldValue(prefix, baseId) {
+            const usePrefix = prefix ? '_' + prefix : '';
+            const el = document.getElementById(baseId + usePrefix) || document.getElementById(baseId);
+            const value = el && el.value ? el.value.trim() : '';
+            return value || 's/d';
         }
 
         function actualizarTotalesCot() {
@@ -455,14 +486,14 @@
             const folioEl = document.getElementById('cotFolio' + usePrefix);
             const fechaEl = document.getElementById('cotFecha' + usePrefix);
             const metodoEl = document.getElementById('cotMetodoPago' + usePrefix);
-            const clienteEl = document.getElementById('clienteCot' + usePrefix);
-            const telefonoEl = document.getElementById('telefonoCot' + usePrefix);
-            const correoEl = document.getElementById('correoCot' + usePrefix);
-            const atiendeEl = document.getElementById('atiendeCot' + usePrefix);
 
             const folio = (folioEl && folioEl.value) ? folioEl.value : 'COT-0001';
             const fecha = (fechaEl && fechaEl.value) ? fechaEl.value : new Date().toISOString().slice(0, 10);
             const metodo = metodoEl ? metodoEl.value : 'Transferencia';
+            const cliente = getCotFieldValue(prefix, 'clienteCot');
+            const telefono = getCotFieldValue(prefix, 'telefonoCot');
+            const correo = getCotFieldValue(prefix, 'correoCot');
+            const atiende = getCotFieldValue(prefix, 'atiendeCot');
             const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
             let itemsHTML = '';
             let subtotal = 0;
@@ -519,7 +550,7 @@
                         * { box-sizing: border-box; }
                         body { margin: 0; font-family: Arial, Helvetica, sans-serif; background: #f4f4f2; color: #111; }
                         .page { max-width: 900px; margin: 0 auto; background: #fff; box-shadow: 0 10px 24px rgba(0,0,0,0.08); }
-                        .header { display:flex; justify-content:space-between; align-items:flex-start; background: linear-gradient(135deg,#111 0%,#1c1c1c 100%); color:#fff; padding: 22px 24px 16px; border-bottom: 4px solid #ef6c00; }
+                        .header { display:flex; justify-content:space-between; align-items:flex-start; background: linear-gradient(135deg,#111 0%,#1c1c1c 100%); color:#fff; padding: 22px 24px 16px; }
                         .brand { font-size: 28px; font-weight: 800; color: #ff8d00; }
                         .subtitle { color: #f1f1f1; font-size: 11px; letter-spacing: 2px; }
                         .title { text-align:right; }
@@ -565,10 +596,10 @@
                         <div class="info">
                             <div class="box">
                                 <h3>Datos del cliente</h3>
-                                <div><strong>Cliente:</strong> ${clienteEl && clienteEl.value ? clienteEl.value : 'Sin nombre'}</div>
-                                <div><strong>Teléfono:</strong> ${telefonoEl && telefonoEl.value ? telefonoEl.value : 's/d'}</div>
-                                <div><strong>Correo:</strong> ${correoEl && correoEl.value ? correoEl.value : 's/d'}</div>
-                                <div><strong>Atiende:</strong> ${atiendeEl && atiendeEl.value ? atiendeEl.value : 's/d'}</div>
+                                <div><strong>Cliente:</strong> ${cliente}</div>
+                                <div><strong>Teléfono:</strong> ${telefono}</div>
+                                <div><strong>Correo:</strong> ${correo}</div>
+                                <div><strong>Atiende:</strong> ${atiende}</div>
                             </div>
                             <div class="box">
                                 <h3>Datos de la empresa</h3>
@@ -629,16 +660,15 @@
             const usePrefix = prefix ? '_' + prefix : '';
             const folioEl = document.getElementById('cotFolio' + usePrefix) || document.getElementById('cotFolio');
             const fechaEl = document.getElementById('cotFecha' + usePrefix) || document.getElementById('cotFecha');
-            const clienteEl = document.getElementById('clienteCot' + usePrefix) || document.getElementById('clienteCot');
-            const telefonoEl = document.getElementById('telefonoCot' + usePrefix) || document.getElementById('telefonoCot');
-            const correoEl = document.getElementById('correoCot' + usePrefix) || document.getElementById('correoCot');
-            const atiendeEl = document.getElementById('atiendeCot' + usePrefix) || document.getElementById('atiendeCot');
             const metodoEl = document.getElementById('cotMetodoPago' + usePrefix) || document.getElementById('cotMetodoPago');
-            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
-
             const folio = (folioEl && folioEl.value) ? folioEl.value : 'OC-0001';
             const fecha = (fechaEl && fechaEl.value) ? fechaEl.value : new Date().toISOString().slice(0, 10);
             const metodo = metodoEl ? metodoEl.value : 'Transferencia';
+            const cliente = getCotFieldValue(prefix, 'clienteCot');
+            const telefono = getCotFieldValue(prefix, 'telefonoCot');
+            const correo = getCotFieldValue(prefix, 'correoCot');
+            const atiende = getCotFieldValue(prefix, 'atiendeCot');
+            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
 
             let subtotal = 0;
             let itemsHTML = '';
@@ -674,7 +704,7 @@
                         * { box-sizing: border-box; }
                         body { margin:0; font-family: Arial, Helvetica, sans-serif; background:#f3f3ef; color:#111; }
                         .page { max-width: 850px; margin: 0 auto; background:#fff; border:1px solid #e5e5e5; box-shadow: 0 10px 28px rgba(0,0,0,0.06); }
-                        .header { display:flex; justify-content:space-between; align-items:flex-start; background: linear-gradient(135deg,#111 0%,#1b1b1b 100%); color:#fff; padding: 22px 24px 18px; border-bottom: 4px solid #ef6c00; }
+                        .header { display:flex; justify-content:space-between; align-items:flex-start; background: linear-gradient(135deg,#111 0%,#1b1b1b 100%); color:#fff; padding: 22px 24px 18px; }
                         .brand { font-size: 28px; font-weight:900; color:#ff8d00; }
                         .subtitle { color:#f1f1f1; font-size:11px; letter-spacing:2px; }
                         .title { text-align:right; }
@@ -726,10 +756,10 @@
                             </div>
                             <div class="box">
                                 <h3>Solicitante / Cliente</h3>
-                                <div><strong>Cliente:</strong> ${clienteEl && clienteEl.value ? clienteEl.value : 'Sin nombre'}</div>
-                                <div><strong>Teléfono:</strong> ${telefonoEl && telefonoEl.value ? telefonoEl.value : 's/d'}</div>
-                                <div><strong>Correo:</strong> ${correoEl && correoEl.value ? correoEl.value : 's/d'}</div>
-                                <div><strong>Atiende:</strong> ${atiendeEl && atiendeEl.value ? atiendeEl.value : 's/d'}</div>
+                                <div><strong>Cliente:</strong> ${cliente}</div>
+                                <div><strong>Teléfono:</strong> ${telefono}</div>
+                                <div><strong>Correo:</strong> ${correo}</div>
+                                <div><strong>Atiende:</strong> ${atiende}</div>
                             </div>
                         </div>
 
