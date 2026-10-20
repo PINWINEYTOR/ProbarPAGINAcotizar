@@ -1,0 +1,1367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcmex - Cotizado en línea</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .servicio-selector { display:flex; flex-wrap:wrap; gap:24px; align-items:center; row-gap:12px; }
+        .servicio-selector label {
+            display:flex; align-items:center; gap:9px; font-weight:400; font-size:14px;
+            color:#333; cursor:pointer; white-space:nowrap; margin:0;
+        }
+        .servicio-selector input[type="checkbox"] {
+            appearance:none; -webkit-appearance:none; -moz-appearance:none;
+            width:17px; height:17px; margin:0; border-radius:50%;
+            border:2px solid #b8b8b8; background:#fff; cursor:pointer;
+            position:relative; flex-shrink:0; transition:border-color .15s ease;
+        }
+        .servicio-selector input[type="checkbox"]:hover { border-color:#888; }
+        .servicio-selector input[type="checkbox"]:checked { border-color:#ef6c00; }
+        .servicio-selector input[type="checkbox"]:checked::after {
+            content:''; position:absolute; top:3px; left:3px; width:7px; height:7px;
+            border-radius:50%; background:#ef6c00;
+        }
+        .servicio-selector-title { font-weight:700; display:block; margin-bottom:12px; color:#222; }
+        .contract-required-box { display:none; margin-top:16px; padding:16px; border:1px solid #f6c17b; background:#fffaf0; border-radius:10px; }
+        .contract-required-box.active { display:block; }
+        .contract-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap:12px 16px; margin-top:12px; }
+        .contract-grid .form-group { margin-bottom:0; }
+        .contract-box { margin-top:18px; border:1px solid #f0d9ad; background:#fff8ef; border-radius:10px; padding:14px; }
+        .order-pdf-button { margin-left: 10px; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="LogoT.png" alt="TechnoMaQ Logo" class="header-logo">
+        <div class="header-content">
+            <h1>Arcmex</h1>
+            <p class="subtitle">Cotizado en línea</p>
+        </div>
+    </header>
+
+    <nav class="main-nav" style="display:flex; gap:12px; padding:12px; background:#fff; border-bottom:1px solid #e6e6e6;">
+        <a href="index.html" class="nav-link" style="text-decoration:none;">Inventario</a>
+        <a href="cotizado_en_linea.html" class="nav-link active" style="text-decoration:none; font-weight:700;">Cotizado en línea</a>
+        <a href="contabilidad.html" class="nav-link" style="text-decoration:none;">Contabilidad</a>
+        <a href="TECHNOBLOCK.html" class="nav-link" style="text-decoration:none;">TechnoBlock</a>
+    </nav>
+
+    <main class="container" style="padding:20px;">
+        <h2>Generar Cotización</h2>
+        <div class="note-card">
+            <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                <button type="button" class="btn" onclick="switchCotTab('general')">General</button>
+                <button type="button" class="btn" onclick="switchCotTab('celosia')">Celosía</button>
+                <button type="button" class="btn" onclick="switchCotTab('bordado')">Bordado</button>
+            </div>
+
+            <div id="cot-module-general" class="cot-module" style="display:block">
+                <form id="formCotizacion" novalidate>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cotFolio">Folio</label>
+                            <input type="text" id="cotFolio" placeholder="COT-0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotFecha">Fecha</label>
+                            <input type="date" id="cotFecha" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCot">Cliente (Nombre)</label>
+                            <input type="text" id="clienteCot" placeholder="Nombre del cliente">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefonoCot">Teléfono</label>
+                            <input type="tel" id="telefonoCot" placeholder="Ej: +52 311 123 4567">
+                        </div>
+                        <div class="form-group">
+                            <label for="correoCot">Correo</label>
+                            <input type="text" id="correoCot" placeholder="cliente@ejemplo.com (opcional)">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotMetodoPago">Método de Pago</label>
+                            <select id="cotMetodoPago">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="Crédito">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="atiendeCot">Atiende (Nombre)</label>
+                            <input type="text" id="atiendeCot" placeholder="Nombre de la persona que atiende">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px;">
+                        <label class="servicio-selector-title">Tipo de Servicio</label>
+                        <div class="servicio-selector">
+                            <label><input type="checkbox" id="cotServRefacciones"> Refacciones</label>
+                            <label><input type="checkbox" id="cotServTecnico"> Servicio técnico</label>
+                            <label><input type="checkbox" id="cotServPreventivo"> Mantenimiento Preventivo</label>
+                            <label><input type="checkbox" id="cotServCorrectivo"> Mantenimiento correctivo</label>
+                            <label><input type="checkbox" id="cotServRenta"> Renta de equipo</label>
+                            <label><input type="checkbox" id="cotServVenta"> Venta de equipo</label>
+                            <label><input type="checkbox" id="cotServCorte"> Corte / maquila</label>
+                            <label><input type="checkbox" id="cotServDiseno"> Diseño</label>
+                            <label><input type="checkbox" id="cotServConsumibles"> Consumibles</label>
+                            <label><input type="checkbox" id="cotServCNC"> CNC</label>
+                        </div>
+                    </div>
+
+                    <div id="contractRequiredBox" class="contract-required-box">
+                        <label style="display:flex; align-items:center; gap:10px; font-weight:700; margin-bottom:12px;">
+                            <input type="checkbox" id="cotContratoRequiere" aria-label="Contrato por renta de equipo"> Contrato
+                        </label>
+                        <div id="contratoFields" class="contract-box" style="display:none;">
+                            <h3 style="margin:0 0 12px; font-size:1rem; color:#222;">Datos del contrato</h3>
+                            <div class="contract-grid">
+                                <div class="form-group">
+                                    <label for="contratoExpediente">No. Expediente</label>
+                                    <input type="text" id="contratoExpediente" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoFechaContrato">Fecha del contrato</label>
+                                    <input type="date" id="contratoFechaContrato" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoHora">Hora</label>
+                                    <input type="time" id="contratoHora" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoCliente">Nombre del cliente</label>
+                                    <input type="text" id="contratoCliente" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoDomicilio">Domicilio</label>
+                                    <input type="text" id="contratoDomicilio" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoNacionalidad">Nacionalidad</label>
+                                    <input type="text" id="contratoNacionalidad" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoNombreINE">Nombre en INE</label>
+                                    <input type="text" id="contratoNombreINE" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoComprobante">Comprobante de domicilio</label>
+                                    <input type="text" id="contratoComprobante" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoNombreComp">Nombre en comprobante</label>
+                                    <input type="text" id="contratoNombreComp" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoParentescoComp">Parentesco comprobante</label>
+                                    <input type="text" id="contratoParentescoComp" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoTelefonoFijo">Teléfono fijo</label>
+                                    <input type="tel" id="contratoTelefonoFijo" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoTelefonoCelular">Teléfono celular</label>
+                                    <input type="tel" id="contratoTelefonoCelular" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoReferencia">Referencia personal</label>
+                                    <input type="text" id="contratoReferencia" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoTelefonoReferencia">Teléfono referencia</label>
+                                    <input type="tel" id="contratoTelefonoReferencia" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoParentescoRef">Parentesco referencia</label>
+                                    <input type="text" id="contratoParentescoRef" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo1">Artículo 1</label>
+                                    <input type="text" id="contratoArticulo1" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo1Cant">Cantidad artículo 1</label>
+                                    <input type="number" id="contratoArticulo1Cant" min="1" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo2">Artículo 2</label>
+                                    <input type="text" id="contratoArticulo2" data-contract-field>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo2Cant">Cantidad artículo 2</label>
+                                    <input type="number" id="contratoArticulo2Cant" min="0" data-contract-field>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo3">Artículo 3</label>
+                                    <input type="text" id="contratoArticulo3" data-contract-field>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo3Cant">Cantidad artículo 3</label>
+                                    <input type="number" id="contratoArticulo3Cant" min="0" data-contract-field>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo4">Artículo 4</label>
+                                    <input type="text" id="contratoArticulo4" data-contract-field>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoArticulo4Cant">Cantidad artículo 4</label>
+                                    <input type="number" id="contratoArticulo4Cant" min="0" data-contract-field>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoObservaciones">Observaciones</label>
+                                    <input type="text" id="contratoObservaciones" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoAditamentos">Aditamentos</label>
+                                    <input type="text" id="contratoAditamentos" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoAditamentosCant">Cantidad aditamentos</label>
+                                    <input type="number" id="contratoAditamentosCant" min="0" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoDuracion">Duración del contrato</label>
+                                    <input type="text" id="contratoDuracion" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoFechaInicio">Fecha inicio</label>
+                                    <input type="date" id="contratoFechaInicio" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoFechaFin">Fecha fin</label>
+                                    <input type="date" id="contratoFechaFin" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoPrecioRenta">Precio renta</label>
+                                    <input type="number" id="contratoPrecioRenta" step="0.01" min="0" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoPrecioLetras">Precio renta en letras</label>
+                                    <input type="text" id="contratoPrecioLetras" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoInteresMora">Interés por mora %</label>
+                                    <input type="number" id="contratoInteresMora" min="0" step="0.01" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoInteresMoraLetras">Interés por mora en letras</label>
+                                    <input type="text" id="contratoInteresMoraLetras" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoDeposito">Depósito en garantía</label>
+                                    <input type="number" id="contratoDeposito" step="0.01" min="0" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoDepositoLetras">Depósito en letras</label>
+                                    <input type="text" id="contratoDepositoLetras" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoCuotaLimpieza">Cuota limpieza</label>
+                                    <input type="number" id="contratoCuotaLimpieza" step="0.01" min="0" data-contract-field required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contratoCuotaLimpiezaLetras">Cuota limpieza en letras</label>
+                                    <input type="text" id="contratoCuotaLimpiezaLetras" data-contract-field required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label>Items</label>
+                        <table id="cotItemsTable" style="width:100%; border-collapse: collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:8px; text-align:left;">Descripción</th>
+                                    <th style="padding:8px; width:100px;">Cantidad</th>
+                                    <th style="padding:8px; width:140px;">Precio Unitario</th>
+                                    <th style="padding:8px; width:120px;">Total</th>
+                                    <th style="padding:8px; width:80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotItemsBody">
+                                <tr>
+                                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                                    <td><input type="number" class="cot-cant" value="1" min="1"></td>
+                                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0"></td>
+                                    <td class="cot-total">$0.00</td>
+                                    <td><button type="button" class="btn btn-danger" onclick="eliminarItemCot(this)">Eliminar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:8px; text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="agregarItemCot()">Agregar</button>
+                        </div>
+                        <div style="margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:14px; flex-wrap:wrap;">
+                            <input type="checkbox" id="cotAplicaIVA" checked style="display:none">
+                            <button type="button" class="btn btn-success" id="cotBtnIVA" onclick="toggleIVACot('')">IVA: Incluido (16%)</button>
+                            <span><strong>Subtotal: </strong><span id="cotSubtotal">$0.00</span></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF()">Impresión</button>
+                        <button type="button" class="btn btn-warning" onclick="previewCotizacion()">Previsualizar</button>
+                        <button type="button" class="btn btn-success" id="cotBtnDescargar" onclick="descargarCotizacionPDF()">Descargar PDF</button>
+                        <button type="button" class="btn btn-info" onclick="generarOrdenCompraPDF()">Generar orden de compra</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="cot-module-celosia" class="cot-module" style="display:none">
+                <form id="formCot_celosia">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cotFolio_celosia">Folio</label>
+                            <input type="text" id="cotFolio_celosia" placeholder="COT-CE-0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotFecha_celosia">Fecha</label>
+                            <input type="date" id="cotFecha_celosia" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCot_celosia">Cliente (Nombre)</label>
+                            <input type="text" id="clienteCot_celosia" placeholder="Nombre del cliente">
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;padding:16px;background:#fff8ef;border:1px solid #ffd9a0;border-radius:8px;">
+                        <p style="font-weight:700;margin-bottom:10px;color:#000;">Calculadora de corte — Celosía MDF calibre 14</p>
+                        <p style="font-size:0.85em;color:#666;margin-bottom:12px;">Precio base: $2,800.00 por m². Ingresa el tamaño de la pieza para calcular el costo.</p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="celosiaAncho">Ancho</label>
+                                <input type="number" id="celosiaAncho" min="0" step="0.01" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaAlto">Alto</label>
+                                <input type="number" id="celosiaAlto" min="0" step="0.01" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaUnidad">Unidad</label>
+                                <select id="celosiaUnidad">
+                                    <option value="cm">Centimetros</option>
+                                    <option value="m">Metros</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaCantidadPiezas">Cantidad de piezas</label>
+                                <input type="number" id="celosiaCantidadPiezas" min="1" value="1">
+                            </div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px;">
+                            <div style="font-size:0.9em;color:#333;">
+                                <span id="celosiaResultadoM2">Superficie: 0.00 m²</span>
+                                &nbsp;·&nbsp;
+                                <strong id="celosiaResultadoTotal">Total: $0.00</strong>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="agregarCelosiaCalculada()">Agregar a la cotización</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label>Items (Celosía)</label>
+                        <table style="width:100%; border-collapse: collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:8px; text-align:left;">Descripción</th>
+                                    <th style="padding:8px; width:100px;">Cantidad</th>
+                                    <th style="padding:8px; width:140px;">Precio Unitario</th>
+                                    <th style="padding:8px; width:120px;">Total</th>
+                                    <th style="padding:8px; width:80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotItemsBody_celosia">
+                                <tr>
+                                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                                    <td><input type="number" class="cot-cant" value="1" min="1"></td>
+                                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0"></td>
+                                    <td class="cot-total">$0.00</td>
+                                    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('celosia');">Eliminar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:8px; text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="agregarItemCot('celosia')">Agregar</button>
+                        </div>
+                        <div style="margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:14px; flex-wrap:wrap;">
+                            <input type="checkbox" id="cotAplicaIVA_celosia" style="display:none">
+                            <button type="button" class="btn btn-secondary" id="cotBtnIVA_celosia" onclick="toggleIVACot('celosia')">IVA: No incluido</button>
+                            <span><strong>Subtotal: </strong><span id="cotSubtotal_celosia">$0.00</span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <label class="servicio-selector-title">Tipo de Servicio</label>
+                        <div class="servicio-selector">
+                            <label><input type="checkbox" id="cotServRefacciones_celosia"> Refacciones</label>
+                            <label><input type="checkbox" id="cotServTecnico_celosia"> Servicio técnico</label>
+                            <label><input type="checkbox" id="cotServPreventivo_celosia"> Mantenimiento Preventivo</label>
+                            <label><input type="checkbox" id="cotServCorrectivo_celosia"> Mantenimiento correctivo</label>
+                            <label><input type="checkbox" id="cotServRenta_celosia"> Renta de equipo</label>
+                            <label><input type="checkbox" id="cotServVenta_celosia"> Venta de equipo</label>
+                            <label><input type="checkbox" id="cotServCorte_celosia" checked> Corte / maquila</label>
+                            <label><input type="checkbox" id="cotServDiseno_celosia"> Diseño</label>
+                            <label><input type="checkbox" id="cotServConsumibles_celosia"> Consumibles</label>
+                            <label><input type="checkbox" id="cotServCNC_celosia"> CNC</label>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF('celosia')">Impresión</button>
+                        <button type="button" class="btn btn-warning" onclick="previewCotizacion('celosia')">Previsualizar</button>
+                        <button type="button" class="btn btn-success" id="cotBtnDescargar_celosia" onclick="descargarCotizacionPDF('celosia')">Descargar PDF</button>
+                        <button type="button" class="btn btn-info order-pdf-button" onclick="generarOrdenCompraPDF('celosia')">Generar orden de compra</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="cot-module-bordado" class="cot-module" style="display:none">
+                <form id="formCot_bordado">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cotFolio_bordado">Folio</label>
+                            <input type="text" id="cotFolio_bordado" placeholder="COT-BO-0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotFecha_bordado">Fecha</label>
+                            <input type="date" id="cotFecha_bordado" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCot_bordado">Cliente (Nombre)</label>
+                            <input type="text" id="clienteCot_bordado" placeholder="Nombre del cliente">
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <label>Items (Bordado)</label>
+                        <table style="width:100%; border-collapse: collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:8px; text-align:left;">Descripción</th>
+                                    <th style="padding:8px; width:100px;">Cantidad</th>
+                                    <th style="padding:8px; width:140px;">Precio Unitario</th>
+                                    <th style="padding:8px; width:120px;">Total</th>
+                                    <th style="padding:8px; width:80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotItemsBody_bordado">
+                                <tr>
+                                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                                    <td><input type="number" class="cot-cant" value="1" min="1"></td>
+                                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0"></td>
+                                    <td class="cot-total">$0.00</td>
+                                    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('bordado');">Eliminar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:8px; text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="agregarItemCot('bordado')">Agregar</button>
+                        </div>
+                        <div style="margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:14px; flex-wrap:wrap;">
+                            <input type="checkbox" id="cotAplicaIVA_bordado" style="display:none">
+                            <button type="button" class="btn btn-secondary" id="cotBtnIVA_bordado" onclick="toggleIVACot('bordado')">IVA: No incluido</button>
+                            <span><strong>Subtotal: </strong><span id="cotSubtotal_bordado">$0.00</span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <label class="servicio-selector-title">Tipo de Servicio</label>
+                        <div class="servicio-selector">
+                            <label><input type="checkbox" id="cotServRefacciones_bordado"> Refacciones</label>
+                            <label><input type="checkbox" id="cotServTecnico_bordado"> Servicio técnico</label>
+                            <label><input type="checkbox" id="cotServPreventivo_bordado"> Mantenimiento Preventivo</label>
+                            <label><input type="checkbox" id="cotServCorrectivo_bordado"> Mantenimiento correctivo</label>
+                            <label><input type="checkbox" id="cotServRenta_bordado"> Renta de equipo</label>
+                            <label><input type="checkbox" id="cotServVenta_bordado"> Venta de equipo</label>
+                            <label><input type="checkbox" id="cotServCorte_bordado"> Corte / maquila</label>
+                            <label><input type="checkbox" id="cotServDiseno_bordado" checked> Diseño</label>
+                            <label><input type="checkbox" id="cotServConsumibles_bordado"> Consumibles</label>
+                            <label><input type="checkbox" id="cotServCNC_bordado"> CNC</label>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF('bordado')">Impresión</button>
+                        <button type="button" class="btn btn-warning" onclick="previewCotizacion('bordado')">Previsualizar</button>
+                        <button type="button" class="btn btn-success" id="cotBtnDescargar_bordado" onclick="descargarCotizacionPDF('bordado')">Descargar PDF</button>
+                        <button type="button" class="btn btn-info order-pdf-button" onclick="generarOrdenCompraPDF('bordado')">Generar orden de compra</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const cotPrefixes = ['celosia','bordado'];
+
+        function switchCotTab(tab){
+            const generalEl = document.getElementById('cot-module-general');
+            if(tab === 'general'){
+                if(generalEl) generalEl.style.display = 'block';
+                cotPrefixes.forEach(pref => {
+                    const el = document.getElementById('cot-module-'+pref);
+                    if(el) el.style.display = 'none';
+                });
+                return;
+            }
+
+            if(generalEl) generalEl.style.display = 'none';
+            cotPrefixes.forEach(pref => {
+                const el = document.getElementById('cot-module-'+pref);
+                if(!el) return;
+                el.style.display = (pref === tab) ? 'block' : 'none';
+            });
+        }
+
+        function toggleContratoVisibility() {
+            const rentaChecked = document.getElementById('cotServRenta')?.checked;
+            const box = document.getElementById('contractRequiredBox');
+            const checkbox = document.getElementById('cotContratoRequiere');
+            const fields = document.getElementById('contratoFields');
+            if (box) box.classList.toggle('active', !!rentaChecked);
+            if (!rentaChecked) {
+                if (fields) fields.style.display = 'none';
+                if (checkbox) checkbox.checked = false;
+                return;
+            }
+            if (fields) fields.style.display = checkbox && checkbox.checked ? 'block' : 'none';
+        }
+
+        document.getElementById('cotServRenta')?.addEventListener('change', function(){
+            const box = document.getElementById('contractRequiredBox');
+            const checkbox = document.getElementById('cotContratoRequiere');
+            const fields = document.getElementById('contratoFields');
+            if (!this.checked) {
+                if (box) box.classList.remove('active');
+                if (fields) fields.style.display = 'none';
+                if (checkbox) checkbox.checked = false;
+                return;
+            }
+            if (box) box.classList.add('active');
+            if (checkbox && checkbox.checked && fields) fields.style.display = 'block';
+        });
+
+        document.getElementById('cotContratoRequiere')?.addEventListener('change', function(){
+            const fields = document.getElementById('contratoFields');
+            if (fields) fields.style.display = this.checked ? 'block' : 'none';
+        });
+
+        function agregarItemCot(prefix){
+            const tbody = prefix ? document.getElementById('cotItemsBody_' + prefix) : document.getElementById('cotItemsBody');
+            if(!tbody) return;
+            const row = document.createElement('tr');
+            if(prefix){
+                row.innerHTML = `
+                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                    <td><input type="number" class="cot-cant" value="1" min="1" onchange="updateCotTotals('${prefix}')"></td>
+                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0" onchange="updateCotTotals('${prefix}')"></td>
+                    <td class="cot-total">$0.00</td>
+                    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('${prefix}');">Eliminar</button></td>
+                `;
+            } else {
+                row.innerHTML = `
+                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                    <td><input type="number" class="cot-cant" value="1" min="1" oninput="actualizarTotalesCot()"></td>
+                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0" oninput="actualizarTotalesCot()"></td>
+                    <td class="cot-total">$0.00</td>
+                    <td><button type="button" class="btn btn-danger" onclick="eliminarItemCot(this)">Eliminar</button></td>
+                `;
+            }
+            tbody.appendChild(row);
+            if(prefix) updateCotTotals(prefix); else actualizarTotalesCot();
+        }
+
+        function updateCotTotals(prefix){
+            const selector = prefix ? '#cotItemsBody_' + prefix : '#cotItemsBody';
+            const rows = document.querySelectorAll(selector + ' tr');
+            let subtotal = 0;
+            rows.forEach(r => {
+                const cant = parseFloat(r.querySelector('.cot-cant')?.value || 0);
+                const precio = parseFloat(r.querySelector('.cot-precio')?.value || 0);
+                const total = (cant * precio) || 0;
+                const totalCell = r.querySelector('.cot-total');
+                if(totalCell) totalCell.textContent = '$' + total.toFixed(2);
+                subtotal += total;
+            });
+            const subtotalEl = document.getElementById(prefix ? 'cotSubtotal_' + prefix : 'cotSubtotal');
+            if(subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+        }
+
+        function actualizarTotalesCot() {
+            const rows = document.querySelectorAll('#cotItemsBody tr');
+            let subtotal = 0;
+            rows.forEach(row => {
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                const precio = parseFloat(row.querySelector('.cot-precio')?.value) || 0;
+                const total = cant * precio;
+                const tdTotal = row.querySelector('.cot-total');
+                if (tdTotal) tdTotal.textContent = formatMoney(total);
+                subtotal += total;
+            });
+            const subtotalEl = document.getElementById('cotSubtotal');
+            if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
+            return subtotal;
+        }
+
+        function formatMoney(v) { return '$' + (v || 0).toFixed(2); }
+
+        const CL_UNIDADES = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
+            'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte'];
+        const CL_DECENAS = ['', '', 'veinti', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+        const CL_CENTENAS = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+        function clDecenasLetras(n) {
+            if (n < 21) return CL_UNIDADES[n];
+            const decena = Math.floor(n / 10);
+            const unidad = n % 10;
+            if (n < 30) return unidad === 0 ? 'veinte' : 'veinti' + CL_UNIDADES[unidad];
+            return unidad === 0 ? CL_DECENAS[decena] : CL_DECENAS[decena] + ' y ' + CL_UNIDADES[unidad];
+        }
+
+        function clCentenasLetras(n) {
+            if (n === 100) return 'cien';
+            const centena = Math.floor(n / 100);
+            const resto = n % 100;
+            let str = CL_CENTENAS[centena];
+            if (resto > 0) str += (str ? ' ' : '') + clDecenasLetras(resto);
+            return str;
+        }
+
+        function clSeccionLetras(n) {
+            if (n === 0) return '';
+            if (n < 21) return CL_UNIDADES[n];
+            if (n < 100) return clDecenasLetras(n);
+            return clCentenasLetras(n);
+        }
+
+        function clConvertirEntero(n) {
+            if (n === 0) return 'cero';
+            const partes = [];
+            const millones = Math.floor(n / 1000000);
+            const miles = Math.floor((n % 1000000) / 1000);
+            const resto = n % 1000;
+            if (millones > 0) partes.push(millones === 1 ? 'un millón' : clSeccionLetras(millones) + ' millones');
+            if (miles > 0) partes.push(miles === 1 ? 'mil' : clSeccionLetras(miles) + ' mil');
+            if (resto > 0) partes.push(clSeccionLetras(resto));
+            return partes.join(' ').trim();
+        }
+
+        function numeroALetras(num) {
+            num = Math.round((num || 0) * 100) / 100;
+            const entero = Math.floor(num);
+            const centavos = Math.round((num - entero) * 100);
+            let letras = clConvertirEntero(entero);
+            letras = letras.charAt(0).toUpperCase() + letras.slice(1);
+            const centavosStr = centavos.toString().padStart(2, '0');
+            return `${letras} pesos ${centavosStr}/100 M.N.`;
+        }
+
+        function buildCotizacionHTML(prefix, forDownload) {
+            const usePrefix = prefix ? ('_' + prefix) : '';
+            const folioEl = document.getElementById('cotFolio' + usePrefix);
+            const fechaEl = document.getElementById('cotFecha' + usePrefix);
+            const metodoEl = document.getElementById('cotMetodoPago' + usePrefix);
+            const clienteEl = document.getElementById('clienteCot' + usePrefix);
+            const telefonoEl = document.getElementById('telefonoCot' + usePrefix);
+            const correoEl = document.getElementById('correoCot' + usePrefix);
+            const atiendeEl = document.getElementById('atiendeCot' + usePrefix);
+
+            const folio = folioEl ? folioEl.value || 'COT-0001' : 'COT-0001';
+            const fecha = fechaEl ? fechaEl.value || new Date().toLocaleDateString('es-ES') : new Date().toLocaleDateString('es-ES');
+            const metodo = metodoEl ? metodoEl.value : '';
+            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
+            let itemsHTML = '';
+            let subtotal = 0;
+            let primerDescripcion = '';
+            rows.forEach((row, idx) => {
+                const desc = row.querySelector('.cot-desc')?.value || '';
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                const precio = parseFloat(row.querySelector('.cot-precio')?.value) || 0;
+                const total = cant * precio;
+                subtotal += total;
+                if (idx === 0) primerDescripcion = desc;
+                itemsHTML += `
+                    <tr>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:center;">${idx + 1}</td>
+                        <td style="padding:6px;border:1px solid #ddd;">${desc}</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:center;">${cant}</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:center;">Unidad</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:right;">${formatMoney(precio)}</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:right;">${formatMoney(total)}</td>
+                    </tr>
+                `;
+            });
+
+            const ivaCheckEl = document.getElementById('cotAplicaIVA' + usePrefix);
+            const aplicaIVA = ivaCheckEl ? ivaCheckEl.checked : !prefix;
+            const iva = aplicaIVA ? subtotal * 0.16 : 0;
+            const total = subtotal + iva;
+            const totalLetras = numeroALetras(total);
+
+            const pagoOpcionesBase = ['Efectivo', 'Transferencia', 'Tarjeta'];
+            let pagoResaltar = '';
+            if (metodo === 'Efectivo') pagoResaltar = 'Efectivo';
+            else if (metodo === 'Transferencia') pagoResaltar = 'Transferencia';
+            else if (metodo === 'Tarjeta') pagoResaltar = 'Tarjeta';
+            else if (metodo === 'Crédito') pagoResaltar = 'Crédito';
+            const pagoOpciones = (pagoResaltar === 'Crédito') ? [...pagoOpcionesBase, 'Crédito'] : pagoOpcionesBase;
+            const condicionPagoHTML = pagoOpciones.map(op => op === pagoResaltar ? `<mark style="background:#fff59d;padding:0 2px;">${op}</mark>` : op).join(' / ');
+
+            const SERVICIOS_MAP = [
+                { id: 'Refacciones', label: 'Refacciones' },
+                { id: 'Tecnico', label: 'Servicio técnico' },
+                { id: 'Preventivo', label: 'Mantenimiento Preventivo' },
+                { id: 'Correctivo', label: 'Mantenimiento correctivo' },
+                { id: 'Renta', label: 'Renta de equipo' },
+                { id: 'Venta', label: 'Venta de equipo' },
+                { id: 'Corte', label: 'Corte / maquila' },
+                { id: 'Diseno', label: 'Diseño' },
+                { id: 'Consumibles', label: 'Consumibles' },
+                { id: 'CNC', label: 'CNC' }
+            ];
+            const tipoServicioHTML = SERVICIOS_MAP.map(s => {
+                const el = document.getElementById('cotServ' + s.id + usePrefix);
+                const marcado = el ? el.checked : false;
+                return `<span>${marcado ? '☑' : '☐'} ${s.label}</span>`;
+            }).join('\n                                ');
+
+            const logoSection = forDownload ? '' : '<img src="LogoT.png" alt="logo" style="height:64px; object-fit:contain" />';
+
+            return `
+                <!doctype html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Cotización ${folio}</title>
+                    <style>
+                        :root { color-scheme: light only; }
+                        * { box-sizing: border-box; }
+                        html, body { background:#ffffff; color-scheme: light only; }
+                        body{font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif; color:#111; margin:0; padding:0}
+                        .page{max-width:800px; margin:0 auto; padding:0; background:#ffffff}
+                        .inner{padding:18px 28px 4px 28px}
+                        .top-bar{background:#ef6c00;height:14px}
+                        .accent-bar{background:#ef6c00;height:8px;margin-top:6px}
+                        .header{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0 0 0;background:#ffffff}
+                        .logo {display:flex;align-items:center}
+                        .logo img{height:60px;margin-right:14px}
+                        .company-name{font-size:24px;font-weight:800;color:#222;line-height:1.1}
+                        .title{color:#111;font-weight:900;font-size:26px;text-align:right}
+                        .meta{font-size:11px;text-align:right;color:#222;margin-top:4px;line-height:1.5}
+                        .meta .folio{color:#ef6c00;font-weight:700}
+                        .boxes{display:flex;margin-top:10px;gap:12px}
+                        .box{border:1px solid #cfcfcf;background:#f7f7f7;padding:8px 12px;font-size:11.5px;flex:1;line-height:1.5}
+                        .box h4{margin:0 0 4px 0;font-size:12px;color:#111;font-weight:800;letter-spacing:.3px}
+                        .servicio-line{margin-top:8px;font-size:12px;color:#222}
+                        .tipo-servicio{border:1px solid #cfcfcf;padding:6px 10px;margin-top:8px;font-size:11.5px;color:#333}
+                        .tipo-servicio strong{display:block;margin-bottom:4px;font-size:12px;color:#111}
+                        .tipo-servicio .chk-row{display:flex;flex-wrap:wrap;gap:14px;row-gap:4px}
+                        .detalle-title{margin-top:10px;font-weight:800;font-size:12.5px;color:#111;border-bottom:2px solid #111;padding-bottom:4px}
+                        table.items{width:100%;border-collapse:collapse;margin-top:6px}
+                        table.items thead th{background:#111;color:#fff;padding:7px 8px;text-align:left;font-size:11.5px}
+                        table.items td{padding:6px 8px;border:1px solid #e6e6e6;font-size:11.5px;color:#222}
+                        .notes{font-size:11px;color:#333;margin-top:6px}
+                        .notes strong{font-size:11.5px;color:#111}
+                        .notes ul{margin:6px 0 0 16px;padding:0}
+                        .bottom-row{display:flex;margin-top:4px;gap:14px}
+                        .summary{width:300px;margin-left:auto;flex-shrink:0}
+                        .summary table{width:100%;border-collapse:collapse;border:1px solid #ddd}
+                        .summary td{padding:7px 10px;font-size:11.5px;border-bottom:1px solid #eee}
+                        .total-row td{background:#ef6c00;color:#fff;font-weight:800;font-size:13px}
+                        .total-letras{background:#f7a35c;color:#fff;font-size:10.5px;font-style:italic;text-align:center;padding:5px 8px}
+                        .foot-boxes{display:flex;gap:12px;margin-top:12px}
+                        .foot-box{flex:1;border:1px solid #cfcfcf;padding:8px 12px;font-size:11px;line-height:1.5;color:#333}
+                        .foot-box h4{margin:0 0 4px 0;font-size:12px;color:#111;font-weight:800}
+                        .sign{display:flex;justify-content:space-between;margin-top:14px;padding:0 10px}
+                        .sig-block{text-align:center;font-size:11px;width:220px}
+                        .sig-line{border-top:1px solid #333;margin-bottom:6px;height:1px}
+                        .footer{background:#ef6c00;padding:6px;color:#fff;text-align:center;margin-top:8px;font-size:10.5px;font-style:italic}
+                        .footer .addr{display:block;font-size:9.5px;font-style:normal;margin-top:1px}
+                        .bottom-accent{background:#ef6c00;height:6px}
+                    </style>
+                </head>
+                <body>
+                    <div class="top-bar"></div>
+                    <div class="page">
+                        <div class="inner">
+                        <div class="header">
+                            <div class="logo">
+                                ${logoSection}
+                                <div>
+                                    <div class="company-name">TechnoMaQ</div>
+                                    <div style="font-size:10.5px;color:#777;letter-spacing:1px">SOLUTIONS</div>
+                                </div>
+                            </div>
+                            <div style="text-align:right">
+                                <div class="title">COTIZACIÓN</div>
+                                <div class="meta">Folio: <span class="folio">${folio}</span><br>Fecha: ${fecha} &nbsp;|&nbsp; Vigencia: 15 Días<br>Moneda: MXN</div>
+                            </div>
+                        </div>
+                        <div class="accent-bar" aria-hidden="true"></div>
+
+                        <div class="boxes">
+                            <div class="box">
+                                <h4>INFORMACIÓN DEL CLIENTE</h4>
+                                <div><strong>Cliente:</strong> ${clienteEl ? clienteEl.value : ''}</div>
+                                <div><strong>Teléfono:</strong> ${telefonoEl ? telefonoEl.value : ''}</div>
+                                <div><strong>Correo:</strong> ${correoEl && correoEl.value ? correoEl.value : 's/d'}</div>
+                                <div><strong>Condición de pago:</strong> ${condicionPagoHTML}</div>
+                            </div>
+                            <div class="box">
+                                <h4>DATOS DE LA EMPRESA</h4>
+                                <div><strong>Empresa:</strong> TECHNOMAQ SOLUCIONES</div>
+                                <div><strong>Atiende:</strong> ${atiendeEl ? atiendeEl.value : ''}</div>
+                                <div><strong>Teléfono:</strong> 311 489 9474 / 331 538 0857</div>
+                                <div><strong>Dirección:</strong> Av. de los Insurgentes oriente No. 2137, Col. Llanitos, Tepic, Nayarit</div>
+                                <div><strong>Correo:</strong> administracion@technomaq.mx</div>
+                            </div>
+                        </div>
+
+                        <div class="servicio-line">Por medio de la presente, ponemos a su consideración la siguiente propuesta económica${primerDescripcion ? ': ' + primerDescripcion : ''}</div>
+
+                        <div class="tipo-servicio">
+                            <strong>TIPO DE SERVICIO</strong>
+                            <div class="chk-row">
+                                ${tipoServicioHTML}
+                            </div>
+                        </div>
+
+                        <div class="detalle-title">DESCRIPCIÓN A DETALLE DE LA PROPUESTA</div>
+
+                        <table class="items">
+                            <thead>
+                                <tr>
+                                    <th style="width:36px">Ítem</th>
+                                    <th>Descripción</th>
+                                    <th style="width:70px;text-align:center">Cantidad</th>
+                                    <th style="width:70px;text-align:center">Unidad</th>
+                                    <th style="width:120px;text-align:right">Precio unitario</th>
+                                    <th style="width:120px;text-align:right">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHTML}
+                            </tbody>
+                        </table>
+
+                        <div class="bottom-row">
+                            <div style="flex:1">
+                                <div class="notes">
+                                    <strong>NOTAS DE LA PROPUESTA</strong>
+                                    <ul>
+                                        ${aplicaIVA ? '<li>En caso de no requerir factura omita el costo sin IVA agregado.</li><li>Para facturación enviar Constancia Fiscal, Uso de CFDI, método de pago y correo electrónico.</li>' : '<li>Precio sin IVA incluido.</li>'}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="summary">
+                                <table>
+                                    <tr>
+                                        <td>Subtotal</td>
+                                        <td style="text-align:right">${formatMoney(subtotal)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Descuento</td>
+                                        <td style="text-align:right"></td>
+                                    </tr>
+                                    ${aplicaIVA ? `
+                                    <tr>
+                                        <td>IVA 16%</td>
+                                        <td style="text-align:right">${formatMoney(iva)}</td>
+                                    </tr>` : ''}
+                                    <tr class="total-row">
+                                        <td>TOTAL</td>
+                                        <td style="text-align:right">${formatMoney(total)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="total-letras">${totalLetras}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="foot-boxes">
+                            <div class="foot-box">
+                                <h4>CONDICIONES COMERCIALES</h4>
+                                <div>→ Precios expresados en moneda nacional (MXN).</div>
+                                <div>→ Precios sujetos a cambios por disponibilidad, especificaciones nuevas o variación de mercado.</div>
+                                <div>→ La aceptación deberá confirmarse por escrito u orden de compra.</div>
+                                <div>→ Entrega, renta o servicio sujeto a agenda y disponibilidad.</div>
+                            </div>
+                            <div class="foot-box">
+                                <h4>PAGO / FACTURACIÓN</h4>
+                                <div><strong>Banco:</strong> BANAMEX</div>
+                                <div><strong>Titular:</strong> TECHNOMAQ SOLUCIONES</div>
+                                <div><strong>Cuenta:</strong> 6379146</div>
+                                <div><strong>CLABE:</strong> 002320701663791461</div>
+                                <div><strong>RFC:</strong> TSO250626ETA</div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div class="sign">
+                            <div class="sig-block">
+                                <div style="height:24px"></div>
+                                <div class="sig-line"></div>
+                                <div>HUANG SEBASTIAN LOPEZ ROJAS</div>
+                            </div>
+                            <div class="sig-block">
+                                <div style="height:24px"></div>
+                                <div class="sig-line"></div>
+                                <div>ACEPTACIÓN DEL CLIENTE</div>
+                            </div>
+                        </div>
+
+                        <div class="footer">TECHNOMAQ "LA MEJOR MAQUINARIA CUANDO LA NECESITEN"<span class="addr">Av. de los Insurgentes oriente No. 2137 Col. Llanitos | Tepic, Nayarit. Tel. de Oficina 311 489 9474</span></div>
+                        <div class="bottom-accent" aria-hidden="true"></div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        function buildOrdenCompraHTML(prefix) {
+            const usePrefix = prefix ? ('_' + prefix) : '';
+            const folioEl = document.getElementById('cotFolio' + usePrefix) || document.getElementById('cotFolio');
+            const fecha = (document.getElementById('cotFecha' + usePrefix) || document.getElementById('cotFecha'))?.value || new Date().toISOString().slice(0,10);
+            const cliente = (document.getElementById('clienteCot' + usePrefix) || document.getElementById('clienteCot'))?.value || 'Cliente';
+            const telefono = (document.getElementById('telefonoCot' + usePrefix) || document.getElementById('telefonoCot'))?.value || 'N/D';
+            const correo = (document.getElementById('correoCot' + usePrefix) || document.getElementById('correoCot'))?.value || 'N/D';
+            const metodo = (document.getElementById('cotMetodoPago' + usePrefix) || document.getElementById('cotMetodoPago'))?.value || 'Efectivo';
+            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
+            let subtotal = 0;
+            let items = '';
+            rows.forEach((r, i) => {
+                const desc = r.querySelector('.cot-desc')?.value || 'Sin descripción';
+                const cant = parseFloat(r.querySelector('.cot-cant')?.value || 0);
+                const precio = parseFloat(r.querySelector('.cot-precio')?.value || 0);
+                const total = cant * precio;
+                subtotal += total;
+                items += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${desc}</td>
+                        <td>${cant}</td>
+                        <td>${formatMoney(precio)}</td>
+                        <td>${formatMoney(total)}</td>
+                    </tr>
+                `;
+            });
+            const iva = subtotal * 0.16;
+            const total = subtotal + iva;
+            return `
+                <!doctype html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Orden de compra ${folioEl?.value || 'OC-0001'}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin:0; background:#fff; color:#111; }
+                        .page { max-width: 900px; margin: 0 auto; padding: 30px; }
+                        .header { display:flex; justify-content:space-between; align-items:flex-start; border-bottom:4px solid #ef6c00; padding-bottom:18px; }
+                        .brand { font-size: 2.2rem; font-weight: 900; letter-spacing:-1px; }
+                        .brand small { display:block; font-size: 0.72rem; letter-spacing: 3px; color:#666; }
+                        .title { text-align:right; font-weight:900; font-size:2rem; }
+                        .meta { margin-top:8px; font-size:0.8rem; text-align:right; }
+                        .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:18px; }
+                        .panel { border:1px solid #ddd; background:#fafafa; padding:12px; }
+                        .panel h3 { margin:0 0 10px; font-size:0.9rem; text-transform:uppercase; }
+                        table { width:100%; border-collapse:collapse; margin-top:18px; }
+                        th { background:#111; color:#fff; padding:10px; font-size:0.78rem; }
+                        td { border:1px solid #ddd; padding:10px; font-size:0.82rem; }
+                        .summary { margin-left:auto; width:300px; margin-top:12px; }
+                        .summary table { width:100%; }
+                        .summary td { border:0; border-bottom:1px solid #eee; }
+                        .totals td { background:#ef6c00; color:#fff; font-weight:700; }
+                        .footer { margin-top:24px; font-size:0.8rem; text-align:center; border-top:2px solid #ef6c00; padding-top: 10px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="page">
+                        <div class="header">
+                            <div class="brand">TechnoMaQ<small>SOLUTIONS</small></div>
+                            <div>
+                                <div class="title">ORDEN DE COMPRA</div>
+                                <div class="meta">Folio: ${folioEl?.value || 'OC-0001'}<br>Fecha: ${fecha}<br>Método de pago: ${metodo}</div>
+                            </div>
+                        </div>
+                        <div class="grid">
+                            <div class="panel">
+                                <h3>Proveedor</h3>
+                                <div><strong>TechnoMaQ Soluciones</strong></div>
+                                <div>Av. de los Insurgentes oriente No. 2137</div>
+                                <div>Col. Llanitos, Tepic, Nayarit</div>
+                                <div>administracion@technomaq.mx</div>
+                            </div>
+                            <div class="panel">
+                                <h3>Cliente / Solicitante</h3>
+                                <div><strong>${cliente}</strong></div>
+                                <div>Tel: ${telefono}</div>
+                                <div>Correo: ${correo}</div>
+                            </div>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Descripción</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio unitario</th>
+                                    <th>Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items || '<tr><td colspan="5">Sin artículos</td></tr>'}
+                            </tbody>
+                        </table>
+                        <div class="summary">
+                            <table>
+                                <tr><td>Subtotal</td><td style="text-align:right;">${formatMoney(subtotal)}</td></tr>
+                                <tr><td>IVA 16%</td><td style="text-align:right;">${formatMoney(iva)}</td></tr>
+                                <tr class="totals"><td>TOTAL</td><td style="text-align:right;">${formatMoney(total)}</td></tr>
+                            </table>
+                        </div>
+                        <div class="footer">
+                            <div>Autorizó: ________________________________</div>
+                            <div style="margin-top:8px;">Aceptación del cliente: ________________________________</div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        function buildContratoHTML() {
+            const requiredIds = [
+                'contratoExpediente', 'contratoFechaContrato', 'contratoHora', 'contratoCliente', 'contratoDomicilio', 'contratoNacionalidad', 'contratoNombreINE', 'contratoComprobante', 'contratoNombreComp', 'contratoParentescoComp', 'contratoTelefonoFijo', 'contratoTelefonoCelular', 'contratoReferencia', 'contratoTelefonoReferencia', 'contratoParentescoRef', 'contratoArticulo1', 'contratoArticulo1Cant', 'contratoObservaciones', 'contratoAditamentos', 'contratoAditamentosCant', 'contratoDuracion', 'contratoFechaInicio', 'contratoFechaFin', 'contratoPrecioRenta', 'contratoPrecioLetras', 'contratoInteresMora', 'contratoInteresMoraLetras', 'contratoDeposito', 'contratoDepositoLetras', 'contratoCuotaLimpieza', 'contratoCuotaLimpiezaLetras'
+            ];
+            const missing = requiredIds.filter(id => !document.getElementById(id)?.value?.trim());
+            if (missing.length) {
+                alert('Debes completar todos los campos del contrato para descargar el PDF. Faltan: ' + missing.length + ' campos');
+                return null;
+            }
+
+            const getValue = id => document.getElementById(id)?.value?.trim() || '';
+            const formatDate = d => {
+                if (!d) return '';
+                const date = new Date(d + 'T00:00:00');
+                return isNaN(date) ? d : date.toLocaleDateString('es-MX', { day:'numeric', month:'long', year:'numeric' });
+            };
+            const art1 = getValue('contratoArticulo1');
+            const art2 = getValue('contratoArticulo2');
+            const art2Cant = getValue('contratoArticulo2Cant');
+            const art3 = getValue('contratoArticulo3');
+            const art3Cant = getValue('contratoArticulo3Cant');
+            const art4 = getValue('contratoArticulo4');
+            const art4Cant = getValue('contratoArticulo4Cant');
+            const listadoArticulos = [
+                art1 ? `I. ${art1} CANTIDAD ${getValue('contratoArticulo1Cant')}` : '',
+                art2 ? `II. ${art2} CANTIDAD ${art2Cant}` : '',
+                art3 ? `III. ${art3} CANTIDAD ${art3Cant}` : '',
+                art4 ? `IV. ${art4} CANTIDAD ${art4Cant}` : ''
+            ].filter(Boolean).join('<br>');
+
+            return `
+                <!doctype html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Contrato de arrendamiento ${getValue('contratoExpediente')}</title>
+                    <style>
+                        body{font-family:'Times New Roman', serif; margin:0; background:#fff; color:#111;}
+                        .page{max-width:980px; margin:0 auto; padding:36px 42px; line-height:1.5; font-size:14px;}
+                        .title{text-align:center; font-weight:700; font-size:18px; text-transform:uppercase; margin-bottom:20px;}
+                        .section{margin-top:8px;}
+                        .small{font-size:12px;}
+                        .signature-row{display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:70px; text-align:center;}
+                        .signature-line{border-top:1px solid #111; padding-top:8px;}
+                    </style>
+                </head>
+                <body>
+                    <div class="page">
+                        <div class="title">Contrato de arrendamiento de maquinaria</div>
+                        <div class="section"><strong>Exp. No: </strong>${getValue('contratoExpediente')}</div>
+                        <div class="section"><strong>Ciudad:</strong> Tepic, Nayarit | <strong>Fecha:</strong> ${formatDate(getValue('contratoFechaContrato'))} | <strong>Hora:</strong> ${getValue('contratoHora')}</div>
+                        <div class="section">Por una parte <strong>HUANG SEBASTIAN LOPEZ ROJAS</strong> en carácter de “LA ARRENDADORA” y por otra parte, el C. <strong>${getValue('contratoCliente')}</strong>, quien se denominará “EL ARRENDATARIO”, se celebra el presente contrato.</div>
+                        <div class="section"><strong>1. DECLARACIONES</strong></div>
+                        <div class="section">1.1. “LA ARRENDADORA” pone a disposición en renta los siguientes equipos:<br>${listadoArticulos}<br>OBSERVACIONES: ${getValue('contratoObservaciones')}<br>ADITAMENTOS: ${getValue('contratoAditamentos')} CANTIDAD ${getValue('contratoAditamentosCant')}</div>
+                        <div class="section">1.2. “EL ARRENDATARIO” manifiesta ser de nacionalidad <strong>${getValue('contratoNacionalidad')}</strong>, mayor de edad, hábil para contratar, domiciliado en <strong>${getValue('contratoDomicilio')}</strong>, con teléfono fijo <strong>${getValue('contratoTelefonoFijo')}</strong>, teléfono celular <strong>${getValue('contratoTelefonoCelular')}</strong>, y acepta entregar su identificación oficial INE a nombre de <strong>${getValue('contratoNombreINE')}</strong>. También presenta comprobante de domicilio de <strong>${getValue('contratoComprobante')}</strong> a nombre de <strong>${getValue('contratoNombreComp')}</strong>, parentesco <strong>${getValue('contratoParentescoComp')}</strong>.</div>
+                        <div class="section">Referencia personal: <strong>${getValue('contratoReferencia')}</strong> teléfono <strong>${getValue('contratoTelefonoReferencia')}</strong>, parentesco <strong>${getValue('contratoParentescoRef')}</strong>.</div>
+                        <div class="section"><strong>2. DURACIÓN</strong></div>
+                        <div class="section">La duración será de <strong>${getValue('contratoDuracion')}</strong>, comprendido del día <strong>${formatDate(getValue('contratoFechaInicio'))}</strong> al día <strong>${formatDate(getValue('contratoFechaFin'))}</strong>.</div>
+                        <div class="section"><strong>3. REMUNERACIÓN</strong></div>
+                        <div class="section">El arrendatario pagará por concepto de renta la cantidad de $${Number(getValue('contratoPrecioRenta')).toFixed(2)} (${getValue('contratoPrecioLetras')}) por el tiempo señalado. El interés por mora será ${getValue('contratoInteresMora')}% (${getValue('contratoInteresMoraLetras')}) por cada día de atraso.</div>
+                        <div class="section">Se entrega depósito en garantía por $${Number(getValue('contratoDeposito')).toFixed(2)} (${getValue('contratoDepositoLetras')}). Asimismo, la cuota por limpieza será $${Number(getValue('contratoCuotaLimpieza')).toFixed(2)} (${getValue('contratoCuotaLimpiezaLetras')}).</div>
+                        <div class="section">Las partes se someten a las condiciones del presente contrato y lo aceptan en todas sus partes.</div>
+                        <div class="signature-row">
+                            <div class="signature-line">LA ARRENDADORA<br><strong>HUANG SEBASTIAN LOPEZ ROJAS</strong></div>
+                            <div class="signature-line">EL ARRENDATARIO<br><strong>${getValue('contratoCliente')}</strong></div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        function validateContratoRequirement() {
+            const isRequired = !!(document.getElementById('cotServRenta')?.checked && document.getElementById('cotContratoRequiere')?.checked);
+            if (!isRequired) return true;
+            const ids = Array.from(document.querySelectorAll('[data-contract-field]')).map(el => el.id);
+            for (const id of ids) {
+                const el = document.getElementById(id);
+                if (!el || !el.value || !String(el.value).trim()) return false;
+            }
+            return true;
+        }
+
+        function openPrintableWindow(html, localTitle) {
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 500);
+        }
+
+        function previewCotizacion(prefix) {
+            if (prefix) {
+                updateCotTotals(prefix);
+                const html = buildCotizacionHTML(prefix);
+                const w = window.open('', '_blank');
+                w.document.open();
+                w.document.write(html);
+                w.document.close();
+                w.focus();
+                return;
+            }
+            actualizarTotalesCot();
+            const html = buildCotizacionHTML();
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+        }
+
+        function generarCotizacionPDF(arg) {
+            let prefix = undefined;
+            if (typeof arg === 'string') prefix = arg;
+            if (prefix) {
+                updateCotTotals(prefix);
+                const html = buildCotizacionHTML(prefix);
+                openPrintableWindow(html, 'Cotización');
+                return;
+            }
+            actualizarTotalesCot();
+            const html = buildCotizacionHTML();
+            openPrintableWindow(html, 'Cotización');
+        }
+
+        function generarOrdenCompraPDF(prefix) {
+            const html = buildOrdenCompraHTML(prefix);
+            openPrintableWindow(html, 'Orden de compra');
+        }
+
+        function descargarCotizacionPDF(prefix){
+            if (document.getElementById('cotServRenta')?.checked && document.getElementById('cotContratoRequiere')?.checked && !validateContratoRequirement()) {
+                alert('Debes completar todos los campos del contrato antes de descargar el PDF.');
+                return;
+            }
+            const btn = document.getElementById(prefix ? 'cotBtnDescargar_' + prefix : 'cotBtnDescargar');
+            if (btn && btn.disabled) return;
+            if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                alert('No se pudo cargar el generador de PDF. Verifica tu conexión a internet e intenta de nuevo.');
+                return;
+            }
+            if(prefix){ updateCotTotals(prefix); } else { actualizarTotalesCot(); }
+            const folioEl = document.getElementById(prefix ? 'cotFolio_' + prefix : 'cotFolio');
+            const folio = (folioEl?.value || 'COT-0001').trim();
+            const textoOriginal = btn ? btn.textContent : '';
+            if(btn){ btn.disabled = true; btn.textContent = 'Generando...'; }
+            const tempDiv = document.createElement('div');
+            const htmlContent = buildCotizacionHTML(prefix, true);
+            tempDiv.innerHTML = htmlContent;
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '0';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '800px';
+            tempDiv.style.background = 'white';
+            tempDiv.style.padding = '0';
+            tempDiv.style.margin = '0';
+            tempDiv.style.zIndex = '-1';
+            tempDiv.style.pointerEvents = 'none';
+            document.body.appendChild(tempDiv);
+            const limpiar = () => {
+                if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                if(btn){ btn.disabled = false; btn.textContent = textoOriginal; }
+            };
+            setTimeout(() => {
+                html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    windowWidth: tempDiv.scrollWidth,
+                    windowHeight: tempDiv.scrollHeight,
+                    onclone: (clonedDoc) => {
+                        clonedDoc.querySelectorAll('img').forEach((img) => {
+                            if (!img.getAttribute('src')) img.remove();
+                        });
+                    }
+                }).then((canvas) => {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        const imgWidth = pageWidth;
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                        const imgData = canvas.toDataURL('image/png');
+                        let heightLeft = imgHeight;
+                        let position = 0;
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                        while (heightLeft > 0) {
+                            position = heightLeft - imgHeight;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                        }
+                        pdf.save('Cotizacion_' + folio + '.pdf');
+                        limpiar();
+                    } catch (err) {
+                        console.error('Error generando el PDF:', err);
+                        limpiar();
+                        alert('Ocurrió un error al generar el PDF: ' + err.message);
+                    }
+                }).catch((err) => {
+                    console.error('Error capturando el contenido con html2canvas:', err);
+                    limpiar();
+                    alert('Ocurrió un error al generar el PDF. Intenta de nuevo.');
+                });
+            }, 300);
+        }
+
+        function isContratoRequestActive() {
+            return document.getElementById('cotServRenta')?.checked && document.getElementById('cotContratoRequiere')?.checked;
+        }
+
+        function descargarContratoPDF() {
+            if (!isContratoRequestActive()) {
+                alert('Activa la opción de contrato para renta de equipo antes de generar el PDF.');
+                return;
+            }
+            if (!validateContratoRequirement()) {
+                alert('Debes completar todos los campos del contrato antes de generar el PDF del contrato.');
+                return;
+            }
+            const html = buildContratoHTML();
+            if (!html) return;
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 500);
+        }
+
+        document.addEventListener('input', function(){
+            actualizarTotalesCot();
+            cotPrefixes.forEach(pref => updateCotTotals(pref));
+        });
+
+        document.addEventListener('DOMContentLoaded', function(){
+            switchCotTab('general');
+            ['', 'celosia', 'bordado'].forEach(p => actualizarBotonIVA(p));
+            toggleContratoVisibility();
+            document.getElementById('cotFecha')?.setAttribute('value', new Date().toISOString().slice(0,10));
+            document.getElementById('cotFecha_celosia')?.setAttribute('value', new Date().toISOString().slice(0,10));
+            document.getElementById('cotFecha_bordado')?.setAttribute('value', new Date().toISOString().slice(0,10));
+        });
+
+        function toggleIVACot(prefix){
+            const suf = prefix ? ('_' + prefix) : '';
+            const chk = document.getElementById('cotAplicaIVA' + suf);
+            if (!chk) return;
+            chk.checked = !chk.checked;
+            actualizarBotonIVA(prefix);
+        }
+
+        function actualizarBotonIVA(prefix){
+            const suf = prefix ? ('_' + prefix) : '';
+            const chk = document.getElementById('cotAplicaIVA' + suf);
+            const btn = document.getElementById('cotBtnIVA' + suf);
+            if (!chk || !btn) return;
+            if (chk.checked) {
+                btn.textContent = 'IVA: Incluido (16%)';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-success');
+            } else {
+                btn.textContent = 'IVA: No incluido';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+            }
+        }
+
+        function eliminarItemCot(button){
+            const row = button.closest('tr');
+            if(row) row.remove();
+            if (document.querySelector('#cotItemsBody')) actualizarTotalesCot();
+            else updateCotTotals();
+        }
+
+        const PRECIO_M2_CELOSIA = 2800.00;
+
+        function calcularCelosia() {
+            const ancho    = parseFloat(document.getElementById('celosiaAncho').value) || 0;
+            const alto     = parseFloat(document.getElementById('celosiaAlto').value)  || 0;
+            const unidad   = document.getElementById('celosiaUnidad').value;
+            const piezas   = parseInt(document.getElementById('celosiaCantidadPiezas').value) || 1;
+            const anchoM = unidad === 'cm' ? ancho / 100 : ancho;
+            const altoM  = unidad === 'cm' ? alto  / 100 : alto;
+            const m2Unitario = anchoM * altoM;
+            const m2Total     = m2Unitario * piezas;
+            const total       = m2Total * PRECIO_M2_CELOSIA;
+
+            document.getElementById('celosiaResultadoM2').textContent = `Superficie: ${m2Total.toFixed(2)} m² (${piezas} pieza${piezas !== 1 ? 's' : ''} de ${m2Unitario.toFixed(2)} m² c/u)`;
+            document.getElementById('celosiaResultadoTotal').textContent = `Total: $${total.toFixed(2)}`;
+            return { ancho, alto, unidad, piezas, m2Unitario, m2Total, total };
+        }
+
+        function agregarCelosiaCalculada() {
+            const datos = calcularCelosia();
+
+            if (!datos.ancho || !datos.alto) {
+                alert('Ingresa el ancho y alto de la pieza antes de agregar.');
+                return;
+            }
+
+            const tbody = document.getElementById('cotItemsBody_celosia');
+            if (!tbody) return;
+
+            const descripcion = `Celosia MDF cal. 14 — ${datos.ancho}${datos.unidad} x ${datos.alto}${datos.unidad} (${datos.m2Unitario.toFixed(2)} m² c/u)`;
+            const precioUnitario = datos.m2Unitario * PRECIO_M2_CELOSIA;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="cot-desc" value="${descripcion}"></td>
+                <td><input type="number" class="cot-cant" value="${datos.piezas}" min="1" onchange="updateCotTotals('celosia')"></td>
+                <td><input type="number" class="cot-precio" value="${precioUnitario.toFixed(2)}" step="0.01" min="0" onchange="updateCotTotals('celosia')"></td>
+                <td class="cot-total">$0.00</td>
+                <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('celosia');">Eliminar</button></td>
+            `;
+            tbody.appendChild(row);
+            updateCotTotals('celosia');
+            document.getElementById('celosiaAncho').value = '';
+            document.getElementById('celosiaAlto').value = '';
+            document.getElementById('celosiaCantidadPiezas').value = '1';
+            calcularCelosia();
+        }
+
+        ['celosiaAncho','celosiaAlto','celosiaUnidad','celosiaCantidadPiezas'].forEach(id => {
+            document.addEventListener('DOMContentLoaded', function() {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularCelosia);
+            });
+        });
+    </script>
+</body>
+</html>
