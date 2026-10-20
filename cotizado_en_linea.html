@@ -138,10 +138,11 @@
                         </div>
                     </div>
 
-                    <div style="margin-top:16px; display:flex; gap:10px;">
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
                         <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF()">Impresión</button>
                         <button type="button" class="btn btn-warning" onclick="previewCotizacion()">Previsualizar</button>
                         <button type="button" class="btn btn-success" id="cotBtnDescargar" onclick="descargarCotizacionPDF()">Descargar PDF</button>
+                        <button type="button" class="btn btn-info" id="cotBtnOrdenCompra" onclick="descargarOrdenCompraPDF()">Generar Orden de Compra</button>
                     </div>
                 </form>
             </div>
@@ -243,10 +244,11 @@
                             <label><input type="checkbox" id="cotServCNC_celosia"> CNC</label>
                         </div>
                     </div>
-                    <div style="margin-top:16px; display:flex; gap:10px;">
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
                         <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF('celosia')">Impresión</button>
                         <button type="button" class="btn btn-warning" onclick="previewCotizacion('celosia')">Previsualizar</button>
                         <button type="button" class="btn btn-success" id="cotBtnDescargar_celosia" onclick="descargarCotizacionPDF('celosia')">Descargar PDF</button>
+                        <button type="button" class="btn btn-info" id="cotBtnOrdenCompra_celosia" onclick="descargarOrdenCompraPDF('celosia')">Generar Orden de Compra</button>
                     </div>
                 </form>
             </div>
@@ -314,10 +316,11 @@
                             <label><input type="checkbox" id="cotServCNC_bordado"> CNC</label>
                         </div>
                     </div>
-                    <div style="margin-top:16px; display:flex; gap:10px;">
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
                         <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF('bordado')">Impresión</button>
                         <button type="button" class="btn btn-warning" onclick="previewCotizacion('bordado')">Previsualizar</button>
                         <button type="button" class="btn btn-success" id="cotBtnDescargar_bordado" onclick="descargarCotizacionPDF('bordado')">Descargar PDF</button>
+                        <button type="button" class="btn btn-info" id="cotBtnOrdenCompra_bordado" onclick="descargarOrdenCompraPDF('bordado')">Generar Orden de Compra</button>
                     </div>
                 </form>
             </div>
@@ -467,6 +470,20 @@
             return `${letras} pesos ${centavosStr}/100 M.N.`;
         }
 
+        function getCotizacionTotals(prefix) {
+            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
+            let subtotal = 0;
+            rows.forEach(row => {
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                const precio = parseFloat(row.querySelector('.cot-precio')?.value) || 0;
+                subtotal += cant * precio;
+            });
+            const ivaCheckEl = document.getElementById('cotAplicaIVA' + (prefix ? '_' + prefix : ''));
+            const aplicaIVA = ivaCheckEl ? ivaCheckEl.checked : !prefix;
+            const iva = aplicaIVA ? subtotal * 0.16 : 0;
+            return { subtotal, iva, total: subtotal + iva };
+        }
+
         function buildCotizacionHTML(prefix, forDownload) {
             const usePrefix = prefix ? ('_' + prefix) : '';
             const folioEl = document.getElementById('cotFolio' + usePrefix);
@@ -503,15 +520,11 @@
                 `;
             });
 
-            // Leer si el usuario decidió incluir IVA o no (botón/checkbox en el formulario)
             const ivaCheckEl = document.getElementById('cotAplicaIVA' + usePrefix);
-
-            const aplicaIVA = ivaCheckEl ? ivaCheckEl.checked : !prefix; // Si existe el control en el formulario, manda su valor; si no, comportamiento anterior.
+            const aplicaIVA = ivaCheckEl ? ivaCheckEl.checked : !prefix;
             const iva = aplicaIVA ? subtotal * 0.16 : 0;
             const total = subtotal + iva;
             const totalLetras = numeroALetras(total);
-
-            // Resaltar la condición de pago seleccionada, igual que en la cotización original
             const pagoOpcionesBase = ['Efectivo', 'Transferencia', 'Tarjeta'];
             let pagoResaltar = '';
             if (metodo === 'Efectivo') pagoResaltar = 'Efectivo';
@@ -523,7 +536,6 @@
                 ? `<mark style="background:#fff59d;padding:0 2px;">${op}</mark>`
                 : op).join(' / ');
 
-            // Leer selección de "Tipo de servicio" desde el formulario (checkboxes)
             const SERVICIOS_MAP = [
                 { id: 'Refacciones', label: 'Refacciones' },
                 { id: 'Tecnico', label: 'Servicio técnico' },
@@ -542,9 +554,7 @@
                 return `<span>${marcado ? '☑' : '☐'} ${s.label}</span>`;
             }).join('\n                                ');
 
-            // Para descargas, no incluir imagen para evitar errores CORS
             const logoSection = forDownload ? '' : '<img src="LogoT.png" alt="logo" style="height:64px; object-fit:contain" />';
-
 
             const html = `
                 <!doctype html>
@@ -668,7 +678,9 @@
                                 <div class="notes">
                                     <strong>NOTAS DE LA PROPUESTA</strong>
                                     <ul>
-                                        ${aplicaIVA ? '<li>En caso de no requerir factura omita el costo sin IVA agregado.</li><li>Para facturación enviar Constancia Fiscal, Uso de CFDI, método de pago y correo electrónico.</li>' : '<li>Precio sin IVA incluido.</li>'}
+                                        <li>En caso de no requerir factura omita el costo sin IVA agregado.</li>
+                                        <li>Para facturación enviar Constancia Fiscal, Uso de CFDI, método de pago y datos completos del cliente.</li>
+                                        <li>La aceptación del servicio se realiza mediante esta cotización aprobada por escrito.</li>
                                     </ul>
                                 </div>
                             </div>
@@ -680,7 +692,7 @@
                                     </tr>
                                     <tr>
                                         <td>Descuento</td>
-                                        <td style="text-align:right"></td>
+                                        <td style="text-align:right">$0.00</td>
                                     </tr>
                                     ${aplicaIVA ? `
                                     <tr>
@@ -730,7 +742,7 @@
                             </div>
                         </div>
 
-                        <div class="footer">TECHNOMAQ "LA MEJOR MAQUINARIA CUANDO LA NECESITEN"<span class="addr">Av. de los Insurgentes oriente No. 2137 Col. Llanitos | Tepic, Nayarit. Tel. de Oficina 311 489 9474</span></div>
+                        <div class="footer">TECHNOMAQ "LA MEJOR MAQUINARIA CUANDO LA NECESITEN"<span class="addr">Av. de los Insurgentes oriente No. 2137 Col. Llanitos | Tepic, Nayarit. Tel. de Oficina: 311 489 9474</span></div>
                         <div class="bottom-accent" aria-hidden="true"></div>
                     </div>
                 </body>
@@ -738,6 +750,260 @@
             `;
 
             return html;
+        }
+
+        function buildOrdenCompraHTML(prefix, forDownload) {
+            const usePrefix = prefix ? ('_' + prefix) : '';
+            const folioEl = document.getElementById('cotFolio' + usePrefix) || document.getElementById('cotFolio');
+            const fechaEl = document.getElementById('cotFecha' + usePrefix) || document.getElementById('cotFecha');
+            const clienteEl = document.getElementById('clienteCot' + usePrefix) || document.getElementById('clienteCot');
+            const telefonoEl = document.getElementById('telefonoCot' + usePrefix) || document.getElementById('telefonoCot');
+            const correoEl = document.getElementById('correoCot' + usePrefix) || document.getElementById('correoCot');
+            const atiendeEl = document.getElementById('atiendeCot' + usePrefix) || document.getElementById('atiendeCot');
+            const metodoEl = document.getElementById('cotMetodoPago' + usePrefix) || document.getElementById('cotMetodoPago');
+            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
+            const folio = (folioEl && folioEl.value) ? folioEl.value : 'OC-0001';
+            const fecha = (fechaEl && fechaEl.value) ? fechaEl.value : new Date().toISOString().slice(0, 10);
+            let subtotal = 0;
+            let itemsHTML = '';
+            rows.forEach((row, idx) => {
+                const desc = row.querySelector('.cot-desc')?.value || 'Sin descripción';
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                const precio = parseFloat(row.querySelector('.cot-precio')?.value) || 0;
+                const total = cant * precio;
+                subtotal += total;
+                itemsHTML += `
+                    <tr>
+                        <td style="padding:7px 8px;border:1px solid #e0e0e0;text-align:center;">${idx + 1}</td>
+                        <td style="padding:7px 8px;border:1px solid #e0e0e0;">${desc}</td>
+                        <td style="padding:7px 8px;border:1px solid #e0e0e0;text-align:center;">${cant}</td>
+                        <td style="padding:7px 8px;border:1px solid #e0e0e0;text-align:right;">${formatMoney(precio)}</td>
+                        <td style="padding:7px 8px;border:1px solid #e0e0e0;text-align:right;">${formatMoney(total)}</td>
+                    </tr>
+                `;
+            });
+            const ivaCheckEl = document.getElementById('cotAplicaIVA' + usePrefix) || document.getElementById('cotAplicaIVA');
+            const aplicaIVA = ivaCheckEl ? ivaCheckEl.checked : true;
+            const iva = aplicaIVA ? subtotal * 0.16 : 0;
+            const total = subtotal + iva;
+            const metodo = metodoEl ? metodoEl.value : 'Transferencia';
+
+            const html = `
+                <!doctype html>
+                <html lang="es">
+                <head>
+                    <meta charset="utf-8">
+                    <title>Orden de Compra ${folio}</title>
+                    <style>
+                        * { box-sizing: border-box; }
+                        body {
+                            margin: 0; background: #fff; color: #111; font-family: Arial, Helvetica, sans-serif;
+                        }
+                        .page { max-width: 850px; margin: 0 auto; padding: 24px 22px 18px; }
+                        .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid #ef6c00; padding-bottom: 12px; }
+                        .brand { font-size: 28px; font-weight: 800; color: #1f1f1f; }
+                        .subtitle { color: #7a7a7a; font-size: 11px; letter-spacing: 2px; }
+                        .title { text-align: right; }
+                        .title h1 { margin: 0; font-size: 30px; color: #111; }
+                        .meta { margin-top: 6px; font-size: 12px; color: #333; line-height: 1.5; }
+                        .meta strong { color: #111; }
+                        .info-boxes { display: flex; gap: 12px; margin-top: 18px; }
+                        .box { flex: 1; border: 1px solid #d8d8d8; background: #fafafa; padding: 10px 12px; font-size: 12px; line-height: 1.7; }
+                        .box h3 { margin: 0 0 8px; font-size: 13px; color: #111; }
+                        .table-wrap { margin-top: 16px; }
+                        table { width: 100%; border-collapse: collapse; }
+                        th { background: #111; color: #fff; font-size: 12px; padding: 8px; text-align: left; }
+                        td { padding: 7px 8px; border: 1px solid #e4e4e4; font-size: 12px; }
+                        .totals { margin-top: 14px; margin-left: auto; width: 280px; }
+                        .totals table { width: 100%; }
+                        .totals td { padding: 8px 10px; border-bottom: 1px solid #ededed; font-size: 12px; }
+                        .totals .total { background: #ef6c00; color: #fff; font-weight: 700; }
+                        .notes { margin-top: 18px; font-size: 11.5px; color: #333; line-height: 1.7; }
+                        .notes strong { color: #111; }
+                        .footer { margin-top: 22px; border-top: 2px solid #ef6c00; padding-top: 10px; font-size: 11px; color: #333; }
+                        .sig { display: flex; justify-content: space-between; margin-top: 26px; }
+                        .sig-box { width: 260px; text-align: center; font-size: 11px; }
+                        .sig-line { border-top: 1px solid #333; margin-bottom: 6px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="page">
+                        <div class="header">
+                            <div>
+                                <div class="brand">TECHNOMAQ</div>
+                                <div class="subtitle">SOLUCIONES</div>
+                            </div>
+                            <div class="title">
+                                <h1>ORDEN DE COMPRA</h1>
+                                <div class="meta">
+                                    <div><strong>No.:</strong> ${folio}</div>
+                                    <div><strong>Fecha:</strong> ${fecha}</div>
+                                    <div><strong>Pago:</strong> ${metodo}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="info-boxes">
+                            <div class="box">
+                                <h3>Proveedor</h3>
+                                <div><strong>Empresa:</strong> TECHNOMAQ SOLUCIONES</div>
+                                <div><strong>Dirección:</strong> Av. de los Insurgentes oriente No. 2137, Col. Llanitos, Tepic, Nayarit</div>
+                                <div><strong>Teléfono:</strong> 311 489 9474 / 331 538 0857</div>
+                                <div><strong>Correo:</strong> administracion@technomaq.mx</div>
+                            </div>
+                            <div class="box">
+                                <h3>Solicitante / Cliente</h3>
+                                <div><strong>Cliente:</strong> ${clienteEl && clienteEl.value ? clienteEl.value : 'Sin nombre'}</div>
+                                <div><strong>Teléfono:</strong> ${telefonoEl && telefonoEl.value ? telefonoEl.value : 's/d'}</div>
+                                <div><strong>Correo:</strong> ${correoEl && correoEl.value ? correoEl.value : 's/d'}</div>
+                                <div><strong>Atiende:</strong> ${atiendeEl && atiendeEl.value ? atiendeEl.value : 's/d'}</div>
+                            </div>
+                        </div>
+
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;">#</th>
+                                        <th>Descripción</th>
+                                        <th style="width:80px; text-align:center;">Cantidad</th>
+                                        <th style="width:120px; text-align:right;">Precio unitario</th>
+                                        <th style="width:120px; text-align:right;">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsHTML || '<tr><td colspan="5" style="text-align:center; padding:12px;">No hay artículos agregados.</td></tr>'}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="totals">
+                            <table>
+                                <tr>
+                                    <td>Subtotal</td>
+                                    <td style="text-align:right;">${formatMoney(subtotal)}</td>
+                                </tr>
+                                ${aplicaIVA ? `<tr><td>IVA 16%</td><td style="text-align:right;">${formatMoney(iva)}</td></tr>` : ''}
+                                <tr class="total">
+                                    <td>Total</td>
+                                    <td style="text-align:right;">${formatMoney(total)}</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="notes">
+                            <strong>Notas:</strong>
+                            <div>• El material o servicio se entrega conforme a lo solicitado en la cotización y la aceptación del proveedor.</div>
+                            <div>• La presente orden de compra debe surtirse con la referencia del folio correspondiente.</div>
+                            <div>• Los precios y condiciones están sujetos a lo indicado en la cotización de origen.</div>
+                        </div>
+
+                        <div class="sig">
+                            <div class="sig-box">
+                                <div class="sig-line"></div>
+                                <div>Solicitante / Cliente</div>
+                            </div>
+                            <div class="sig-box">
+                                <div class="sig-line"></div>
+                                <div>Autorización TECHNOMAQ</div>
+                            </div>
+                        </div>
+
+                        <div class="footer">
+                            <div>Av. de los Insurgentes oriente No. 2137, Col. Llanitos | Tepic, Nayarit</div>
+                            <div>Tel. 311 489 9474 / 331 538 0857 • administracion@technomaq.mx</div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            return html;
+        }
+
+        function exportHtmlToPdf(htmlContent, fileName, buttonEl) {
+            const btn = buttonEl || null;
+            if (btn && btn.disabled) return;
+            if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
+                alert('No se pudo cargar el generador de PDF. Verifica tu conexión a internet e intenta de nuevo.');
+                return;
+            }
+
+            const textoOriginal = btn ? btn.textContent : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.textContent = 'Generando...';
+            }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '0';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '900px';
+            tempDiv.style.background = '#fff';
+            tempDiv.style.zIndex = '-1';
+            tempDiv.style.pointerEvents = 'none';
+            document.body.appendChild(tempDiv);
+
+            const limpiar = () => {
+                if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = textoOriginal;
+                }
+            };
+
+            setTimeout(() => {
+                html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    windowWidth: tempDiv.scrollWidth,
+                    windowHeight: tempDiv.scrollHeight
+                }).then((canvas) => {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        const imgWidth = pageWidth;
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                        const imgData = canvas.toDataURL('image/png');
+
+                        let heightLeft = imgHeight;
+                        let position = 0;
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+
+                        while (heightLeft > 0) {
+                            position = heightLeft - imgHeight;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                        }
+
+                        pdf.save(fileName);
+                        limpiar();
+                    } catch (err) {
+                        console.error('Error generando PDF:', err);
+                        limpiar();
+                        alert('Ocurrió un error al generar el PDF: ' + err.message);
+                    }
+                }).catch((err) => {
+                    console.error('Error capturando el contenido:', err);
+                    limpiar();
+                    alert('Ocurrió un error al generar el PDF. Intenta de nuevo.');
+                });
+            }, 250);
+        }
+
+        function descargarOrdenCompraPDF(prefix) {
+            const btn = document.getElementById(prefix ? 'cotBtnOrdenCompra_' + prefix : 'cotBtnOrdenCompra');
+            const folioEl = document.getElementById(prefix ? 'cotFolio_' + prefix : 'cotFolio');
+            const folio = (folioEl && folioEl.value) ? folioEl.value : 'OC-0001';
+            const htmlContent = buildOrdenCompraHTML(prefix, true);
+            exportHtmlToPdf(htmlContent, 'OrdenCompra_' + folio + '.pdf', btn);
         }
 
         // Convierte un elemento <img> del DOM a dataURL si es posible
@@ -810,7 +1076,6 @@
             if (typeof arg === 'string') {
                 prefix = arg;
             } else if (arg && arg.preventDefault) {
-                // called as event
                 arg.preventDefault();
             }
 
@@ -826,7 +1091,6 @@
                 return;
             }
 
-            // default (general)
             actualizarTotalesCot();
             const html = buildCotizacionHTML();
             const w = window.open('', '_blank');
@@ -837,11 +1101,9 @@
             setTimeout(() => { w.print(); }, 500);
         }
 
-        // Genera y descarga el PDF de la cotización completa sin cortes
         function descargarCotizacionPDF(prefix){
             const btn = document.getElementById(prefix ? 'cotBtnDescargar_' + prefix : 'cotBtnDescargar');
 
-            // Evitar clics múltiples mientras se genera el PDF (causa de descargas duplicadas/triples)
             if (btn && btn.disabled) return;
 
             if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
@@ -857,11 +1119,6 @@
             const textoOriginal = btn ? btn.textContent : '';
             if(btn){ btn.disabled = true; btn.textContent = 'Generando...'; }
 
-            // Crear un contenedor temporal con el HTML de la cotización.
-            // Se coloca DENTRO del área visible (top:0, left:0) pero detrás de
-            // todo el contenido (z-index negativo) porque posicionarlo muy
-            // lejos de la pantalla (left:-99999px) es lo que provocaba que
-            // html2canvas capturara un lienzo en blanco.
             const tempDiv = document.createElement('div');
             const htmlContent = buildCotizacionHTML(prefix, true);
             tempDiv.innerHTML = htmlContent;
@@ -881,7 +1138,6 @@
                 if(btn){ btn.disabled = false; btn.textContent = textoOriginal; }
             };
 
-            // Esperar a que se renderice el contenido (imágenes, fuentes, etc.)
             setTimeout(() => {
                 html2canvas(tempDiv, {
                     scale: 2,
@@ -891,8 +1147,6 @@
                     windowWidth: tempDiv.scrollWidth,
                     windowHeight: tempDiv.scrollHeight,
                     onclone: (clonedDoc) => {
-                        // Seguridad extra: si quedara alguna <img> sin src válido,
-                        // se elimina para que no rompa la captura (franja negra / errores).
                         clonedDoc.querySelectorAll('img').forEach((img) => {
                             if (!img.getAttribute('src')) img.remove();
                         });
@@ -900,12 +1154,7 @@
                 }).then((canvas) => {
                     try {
                         const { jsPDF } = window.jspdf;
-                        const pdf = new jsPDF({
-                            unit: 'mm',
-                            format: 'letter',
-                            orientation: 'portrait'
-                        });
-
+                        const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
                         const pageWidth = pdf.internal.pageSize.getWidth();
                         const pageHeight = pdf.internal.pageSize.getHeight();
                         const imgWidth = pageWidth;
@@ -914,12 +1163,9 @@
 
                         let heightLeft = imgHeight;
                         let position = 0;
-
-                        // Primera página
                         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                         heightLeft -= pageHeight;
 
-                        // Páginas adicionales solo si el contenido realmente no cabe en una hoja
                         while (heightLeft > 0) {
                             position = heightLeft - imgHeight;
                             pdf.addPage();
@@ -942,23 +1188,16 @@
             }, 300);
         }
 
-        // Actualizar totales en cambios de inputs para todos los módulos (general + prefijos)
         document.addEventListener('input', function(e){
-            // general
             actualizarTotalesCot();
-            // prefijos
             cotPrefixes.forEach(pref => updateCotTotals(pref));
         });
 
-        // Inicialización: asegurar que el tab general esté visible
         document.addEventListener('DOMContentLoaded', function(){
             switchCotTab('general');
             ['', 'celosia', 'bordado'].forEach(p => actualizarBotonIVA(p));
         });
 
-        // ============================================================
-        //  Botón para incluir o no el IVA (16%) en la cotización
-        // ============================================================
         function toggleIVACot(prefix){
             const suf = prefix ? ('_' + prefix) : '';
             const chk = document.getElementById('cotAplicaIVA' + suf);
@@ -986,13 +1225,9 @@
         function eliminarItemCot(button){
             const row = button.closest('tr');
             if(row) row.remove();
-            // Si es la cotización general, actualizar con la función original
             if (document.querySelector('#cotItemsBody')) actualizarTotalesCot();
             else updateCotTotals();
         }
-        // ============================================================
-        //  Calculadora de Celosía — MDF calibre 14, $2,800.00 por m²
-        // ============================================================
         const PRECIO_M2_CELOSIA = 2800.00;
 
         function calcularCelosia() {
@@ -1001,60 +1236,24 @@
             const unidad   = document.getElementById('celosiaUnidad').value;
             const piezas   = parseInt(document.getElementById('celosiaCantidadPiezas').value) || 1;
 
-            // Convertir a metros
-            const anchoM = unidad === 'cm' ? ancho / 100 : ancho;
-            const altoM  = unidad === 'cm' ? alto  / 100 : alto;
-
-            const m2Unitario = anchoM * altoM;
-            const m2Total     = m2Unitario * piezas;
-            const total       = m2Total * PRECIO_M2_CELOSIA;
-
-            document.getElementById('celosiaResultadoM2').textContent =
-                `Superficie: ${m2Total.toFixed(2)} m² (${piezas} pieza${piezas !== 1 ? 's' : ''} de ${m2Unitario.toFixed(2)} m² c/u)`;
-            document.getElementById('celosiaResultadoTotal').textContent =
-                `Total: $${total.toFixed(2)}`;
-
-            return { ancho, alto, unidad, piezas, m2Unitario, m2Total, total };
-        }
-
-        function agregarCelosiaCalculada() {
-            const datos = calcularCelosia();
-
-            if (!datos.ancho || !datos.alto) {
-                alert('Ingresa el ancho y alto de la pieza antes de agregar.');
-                return;
+            let anchoM = ancho;
+            let altoM = alto;
+            if (unidad === 'cm') {
+                anchoM = ancho / 100;
+                altoM = alto / 100;
             }
 
-            const tbody = document.getElementById('cotItemsBody_celosia');
-            if (!tbody) return;
+            const superficie = (anchoM * altoM) * piezas;
+            const total = superficie * PRECIO_M2_CELOSIA;
+            const resultM2 = document.getElementById('celosiaResultadoM2');
+            const resultTotal = document.getElementById('celosiaResultadoTotal');
 
-            const descripcion = `Celosia MDF cal. 14 — ${datos.ancho}${datos.unidad} x ${datos.alto}${datos.unidad} (${datos.m2Unitario.toFixed(2)} m² c/u)`;
-            const precioUnitario = datos.m2Unitario * PRECIO_M2_CELOSIA;
-
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td><input type="text" class="cot-desc" value="${descripcion}"></td>
-                <td><input type="number" class="cot-cant" value="${datos.piezas}" min="1" onchange="updateCotTotals('celosia')"></td>
-                <td><input type="number" class="cot-precio" value="${precioUnitario.toFixed(2)}" step="0.01" min="0" onchange="updateCotTotals('celosia')"></td>
-                <td class="cot-total">$0.00</td>
-                <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('celosia');">Eliminar</button></td>
-            `;
-            tbody.appendChild(row);
-            updateCotTotals('celosia');
-
-            // Limpiar la calculadora para la siguiente pieza
-            document.getElementById('celosiaAncho').value = '';
-            document.getElementById('celosiaAlto').value = '';
-            document.getElementById('celosiaCantidadPiezas').value = '1';
-            calcularCelosia();
+            if (resultM2) resultM2.textContent = `Superficie: ${superficie.toFixed(2)} m²`;
+            if (resultTotal) resultTotal.textContent = `Total: ${formatMoney(total)}`;
         }
 
-        // Recalcular en vivo mientras el usuario escribe
-        ['celosiaAncho','celosiaAlto','celosiaUnidad','celosiaCantidadPiezas'].forEach(id => {
-            document.addEventListener('DOMContentLoaded', function() {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', calcularCelosia);
-            });
+        document.addEventListener('input', function () {
+            calcularCelosia();
         });
     </script>
 </body>
