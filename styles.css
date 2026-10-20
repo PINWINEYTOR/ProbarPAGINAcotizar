@@ -217,3 +217,86 @@ input:focus, select:focus, textarea:focus {
     .form-row { grid-template-columns: 1fr; }
     .btn { font-size: 0.8em; padding: 8px 12px; }
 }
+
+/* Estilos para exportación de PDFs */
+.pdf-export {
+    width: 794px;
+    max-width: 794px;
+    margin: 0 auto;
+    background: #fff !important;
+    color: #111 !important;
+    font-family: Arial, Helvetica, sans-serif !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    overflow: visible !important;
+}
+
+.pdf-export *,
+.pdf-export *::before,
+.pdf-export *::after {
+    box-sizing: border-box;
+}
+
+.pdf-export .page {
+    width: 100% !important;
+    max-width: 100% !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    border: 0 !important;
+}
+
+.pdf-export .header,
+.pdf-export .box,
+.pdf-export .foot-box,
+.pdf-export .summary,
+.pdf-export .tipo-servicio,
+.pdf-export .notes,
+.pdf-export .top-bar,
+.pdf-export .accent-bar,
+.pdf-export .footer,
+.pdf-export .sign {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+}
+
+.pdf-export table,
+.pdf-export th,
+.pdf-export td,
+.pdf-export input,
+.pdf-export select,
+.pdf-export textarea {
+    color: #111 !important;
+    background: #fff !important;
+}
+
+.pdf-export .btn,
+.pdf-export .nav-link,
+.pdf-export .main-nav,
+.pdf-export .cot-module,
+.pdf-export .note-card,
+.pdf-export .container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    box-shadow: none !important;
+}
+
+@media print {
+    @page {
+        size: A4 portrait;
+        margin: 10mm;
+    }
+
+    html, body {
+        background: #fff !important;
+        color: #111 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .pdf-export {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: none !important;
+    }
+}
