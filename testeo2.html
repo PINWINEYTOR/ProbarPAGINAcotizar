@@ -2,9 +2,6 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <!-- This site is hosted on Netlify. Anyone can build and deploy a site
-         like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=9d25c2a1-c1a9-4f1c-bce2-f4a673e8ad4f
-         Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechnoMaQ - Cotizado en línea</title>
     <link rel="stylesheet" href="styles.css">
@@ -27,6 +24,36 @@
             border-radius:50%; background:#ef6c00;
         }
         .servicio-selector-title { font-weight:700; display:block; margin-bottom:12px; color:#222; }
+
+        .contrato-renta-panel {
+            display: none;
+            margin-top: 24px;
+            padding: 20px;
+            background: #fff8f1;
+            border: 2px solid #ef6c00;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(239, 108, 0, 0.08);
+            animation: fadeInContrato 0.25s ease-in-out;
+        }
+        .contrato-renta-panel.active { display: block; }
+        @keyframes fadeInContrato {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .contrato-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 2px solid #ffd8b5; padding-bottom: 10px; margin-bottom: 16px;
+            flex-wrap: wrap; gap: 8px;
+        }
+        .contrato-header h3 {
+            margin: 0; color: #d65f00; font-size: 18px; display: flex;
+            align-items: center; gap: 8px;
+        }
+        .contrato-section-title {
+            font-size: 13px; font-weight: 700; text-transform: uppercase;
+            color: #444; margin: 16px 0 10px 0; padding-bottom: 4px;
+            border-bottom: 1px solid #e6d5c3; letter-spacing: 0.4px;
+        }
     </style>
 </head>
 <body>
@@ -99,7 +126,7 @@
                             <label><input type="checkbox" id="cotServTecnico"> Servicio técnico</label>
                             <label><input type="checkbox" id="cotServPreventivo"> Mantenimiento Preventivo</label>
                             <label><input type="checkbox" id="cotServCorrectivo"> Mantenimiento correctivo</label>
-                            <label><input type="checkbox" id="cotServRenta"> Renta de equipo</label>
+                            <label><input type="checkbox" id="cotServRenta" onchange="toggleMenuContratoRenta()"> Renta de equipo</label>
                             <label><input type="checkbox" id="cotServVenta"> Venta de equipo</label>
                             <label><input type="checkbox" id="cotServCorte"> Corte / maquila</label>
                             <label><input type="checkbox" id="cotServDiseno"> Diseño</label>
@@ -152,6 +179,122 @@
                         <button type="button" class="btn btn-success" id="cotBtnDescargar" onclick="descargarCotizacionPDF()">Descargar PDF</button>
                         <button type="button" class="btn btn-info" id="cotBtnOrdenCompra" onclick="descargarOrdenCompraPDF()">Generar Orden de Compra</button>
                     </div>
+
+                    <div id="menuContratoRenta" class="contrato-renta-panel">
+                        <div class="contrato-header">
+                            <h3>📄 Generar Contrato de Arrendamiento de Maquinaria</h3>
+                            <span style="font-size:12px; color:#666;">Los artículos, cliente, teléfono y monto se sincronizan con la cotización</span>
+                        </div>
+
+                        <div class="contrato-section-title">1. Lugar, Fecha y Vigencia del Arrendamiento (Cláusula Segunda)</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contratoHora">Hora de celebración</label>
+                                <input type="time" id="contratoHora">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoFechaInicio">Fecha de inicio</label>
+                                <input type="date" id="contratoFechaInicio" onchange="calcularDiasContrato()">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoFechaFin">Fecha de término</label>
+                                <input type="date" id="contratoFechaFin" onchange="calcularDiasContrato()">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoDias">Duración (Días naturales)</label>
+                                <input type="number" id="contratoDias" min="1" value="1">
+                            </div>
+                        </div>
+
+                        <div class="contrato-section-title">2. Observaciones y Aditamentos del Equipo (Declaración 1.1)</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoObservaciones">Observaciones del equipo (Especificar)</label>
+                                <input type="text" id="contratoObservaciones" placeholder="Ej: Equipo en óptimas condiciones, sin detalles...">
+                            </div>
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoAditamentos">Otros aditamentos o accesorios</label>
+                                <input type="text" id="contratoAditamentos" placeholder="Ej: Cables, extensiones, discos (opcional)">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoCantAditamentos">Cantidad Aditamentos</label>
+                                <input type="number" id="contratoCantAditamentos" min="0" value="0">
+                            </div>
+                        </div>
+
+                        <div class="contrato-section-title">3. Datos y Documentación de "El Arrendatario" (Declaración 2.1)</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoDomicilioCliente">Domicilio del Arrendatario (Calle, Número y Colonia)</label>
+                                <input type="text" id="contratoDomicilioCliente" placeholder="Ej: GUILLERMO VILLASANA 8 COL AVIACION">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoCiudadCliente">Ciudad y Estado</label>
+                                <input type="text" id="contratoCiudadCliente" value="TEPIC, NAY., NAYARIT">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoTelFijo">Teléfono de Contacto Fijo</label>
+                                <input type="text" id="contratoTelFijo" value="00" placeholder="Ej: 00 o 311...">
+                            </div>
+                        </div>
+
+                        <div class="form-row" style="margin-top:8px;">
+                            <div class="form-group">
+                                <label for="contratoIneNombre">Identificación Oficial INE a nombre de</label>
+                                <input type="text" id="contratoIneNombre" placeholder="Se autocompleta con el nombre del cliente">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoTipoComprobante">Comprobante de Domicilio de</label>
+                                <input type="text" id="contratoTipoComprobante" value="CFE (COMISION FEDERAL DE ELECTRICIDAD)">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoComprobanteNombre">Comprobante a nombre de</label>
+                                <input type="text" id="contratoComprobanteNombre" placeholder="Nombre del titular del recibo">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoComprobanteParentesco">Parentesco (Titular comprobante)</label>
+                                <input type="text" id="contratoComprobanteParentesco" placeholder="Ej: MAMA, PAPA, PROPIO">
+                            </div>
+                        </div>
+
+                        <div class="contrato-section-title">4. Referencia Personal (Declaración 2.1)</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoRefNombre">Nombre de Referencia Personal (C.)</label>
+                                <input type="text" id="contratoRefNombre" placeholder="Ej: GALINDO GARCIA MARIA MAGDALENA">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoRefTel">Teléfono de Referencia</label>
+                                <input type="tel" id="contratoRefTel" placeholder="Ej: 3112674522">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoRefParentesco">Parentesco / Relación</label>
+                                <input type="text" id="contratoRefParentesco" placeholder="Ej: COMPAÑEROS DE TRABAJO">
+                            </div>
+                        </div>
+
+                        <div class="contrato-section-title">5. Fianza y Condiciones Adicionales (Cláusulas Tercera, Séptima y Novena)</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contratoMontoRenta">Renta Total Pactada Antes de Impuestos ($)</label>
+                                <input type="number" id="contratoMontoRenta" step="0.01" min="0" placeholder="Se toma del Subtotal automáticamente">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoFianza">Fianza o Depósito en Garantía ($)</label>
+                                <input type="number" id="contratoFianza" step="0.01" min="0" value="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoCuotaLimpieza">Cuota por Limpieza ($)</label>
+                                <input type="number" id="contratoCuotaLimpieza" step="0.01" min="0" value="50.00">
+                            </div>
+                        </div>
+
+                        <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; border-top:1px solid #ffd8b5; padding-top:14px;">
+                            <button type="button" class="btn btn-primary" onclick="imprimirContratoRenta()">Imprimir Contrato</button>
+                            <button type="button" class="btn btn-warning" onclick="previewContratoRenta()">Previsualizar Contrato</button>
+                            <button type="button" class="btn btn-success" id="btnDescargarContrato" onclick="descargarContratoPDF()">Descargar Contrato PDF</button>
+                        </div>
+                    </div>
                 </form>
             </div>
 
@@ -195,7 +338,7 @@
 
                     <div style="margin-top:16px;padding:16px;background:#fff8ef;border:1px solid #ffd9a0;border-radius:8px;">
                         <p style="font-weight:700;margin-bottom:10px;color:#000;">Calculadora de corte — Costos 2026</p>
-                        <p style="font-size:0.85em;color:#666;margin-bottom:12px;">Selecciona el producto y calibre y ajusta el precio por m² si lo necesitas. Ingresa el tamaño de la pieza para calcular el costo antes de agregarla.</p>
+                        <p style="font-size:0.85em;color:#666;margin-bottom:12px;">Selecciona el producto y calibre y ajusta el precio por m² si lo necesitas. Ingresa el tamaño de la pieza para calcular el costo.</p>
                         <div class="form-row">
                             <div class="form-group">
                                 <label for="celosiaMaterial">Producto / Calibre</label>
@@ -287,6 +430,7 @@
                             <span><strong>Subtotal: </strong><span id="cotSubtotal_celosia">$0.00</span></span>
                         </div>
                     </div>
+
                     <div style="margin-top:16px;">
                         <label class="servicio-selector-title">Tipo de Servicio</label>
                         <div class="servicio-selector">
@@ -386,6 +530,7 @@
                             <span><strong>Subtotal: </strong><span id="cotSubtotal_bordado">$0.00</span></span>
                         </div>
                     </div>
+
                     <div style="margin-top:16px;">
                         <label class="servicio-selector-title">Tipo de Servicio</label>
                         <div class="servicio-selector">
@@ -464,6 +609,11 @@
             });
             const subtotalEl = document.getElementById('cotSubtotal');
             if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
+
+            const montoContratoInput = document.getElementById('contratoMontoRenta');
+            if (montoContratoInput && !montoContratoInput.dataset.manual) {
+                montoContratoInput.value = subtotal.toFixed(2);
+            }
             return subtotal;
         }
 
@@ -542,6 +692,57 @@
                 btn.classList.remove('btn-success');
                 btn.classList.add('btn-secondary');
             }
+        }
+
+        const CL_UNIDADES = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
+            'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte'];
+        const CL_DECENAS = ['', '', 'veinti', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+        const CL_CENTENAS = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+        function clDecenasLetras(n) {
+            if (n < 21) return CL_UNIDADES[n];
+            const decena = Math.floor(n / 10);
+            const unidad = n % 10;
+            if (n < 30) return unidad === 0 ? 'veinte' : 'veinti' + CL_UNIDADES[unidad];
+            return unidad === 0 ? CL_DECENAS[decena] : CL_DECENAS[decena] + ' y ' + CL_UNIDADES[unidad];
+        }
+
+        function clCentenasLetras(n) {
+            if (n === 100) return 'cien';
+            const centena = Math.floor(n / 100);
+            const resto = n % 100;
+            let str = CL_CENTENAS[centena];
+            if (resto > 0) str += (str ? ' ' : '') + clDecenasLetras(resto);
+            return str;
+        }
+
+        function clSeccionLetras(n) {
+            if (n === 0) return '';
+            if (n < 21) return CL_UNIDADES[n];
+            if (n < 100) return clDecenasLetras(n);
+            return clCentenasLetras(n);
+        }
+
+        function clConvertirEntero(n) {
+            if (n === 0) return 'cero';
+            const partes = [];
+            const millones = Math.floor(n / 1000000);
+            const miles = Math.floor((n % 1000000) / 1000);
+            const resto = n % 1000;
+            if (millones > 0) partes.push(millones === 1 ? 'un millón' : clSeccionLetras(millones) + ' millones');
+            if (miles > 0) partes.push(miles === 1 ? 'mil' : clSeccionLetras(miles) + ' mil');
+            if (resto > 0) partes.push(clSeccionLetras(resto));
+            return partes.join(' ').trim();
+        }
+
+        function numeroALetras(num) {
+            num = Math.round((num || 0) * 100) / 100;
+            const entero = Math.floor(num);
+            const centavos = Math.round((num - entero) * 100);
+            const texto = clConvertirEntero(entero);
+            let letras = texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : 'Cero';
+            const centavosStr = centavos.toString().padStart(2, '0');
+            return `${letras} pesos ${centavosStr}/100 M.N.`;
         }
 
         function buildCotizacionHTML(prefix, forDownload) {
@@ -990,215 +1191,379 @@
             return div.innerHTML;
         }
 
-        function numeroALetras(num) {
-            num = Math.round((num || 0) * 100) / 100;
-            const entero = Math.floor(num);
-            const centavos = Math.round((num - entero) * 100);
-            const texto = clConvertirEntero(entero);
-            let letras = texto.texto ? texto.texto.charAt(0).toUpperCase() + texto.texto.slice(1) : 'Cero';
-            const centavosStr = centavos.toString().padStart(2, '0');
-            const palabraPesos = entero === 1 ? 'peso' : 'pesos';
-            const conector = texto.necesitaDe ? ' de' : '';
-            return `${letras}${conector} ${palabraPesos} ${centavosStr}/100 M.N.`;
+        function toggleMenuContratoRenta() {
+            const chkRenta = document.getElementById('cotServRenta');
+            const panel = document.getElementById('menuContratoRenta');
+            if (!chkRenta || !panel) return;
+
+            if (chkRenta.checked) {
+                panel.classList.add('active');
+                inicializarValoresContrato();
+            } else {
+                panel.classList.remove('active');
+            }
         }
 
-        function clConvertirEntero(n) {
-            if (n === 0) return { texto: 'cero', necesitaDe: false };
-            const partes = [];
-            const millones = Math.floor(n / 1000000);
-            const miles = Math.floor((n % 1000000) / 1000);
-            const resto = n % 1000;
-            if (millones > 0) partes.push(millones === 1 ? 'un millón' : clSeccionLetras(millones) + ' millones');
-            if (miles > 0) partes.push(miles === 1 ? 'mil' : clSeccionLetras(miles) + ' mil');
-            if (resto > 0) partes.push(clSeccionLetras(resto));
-            const necesitaDe = millones > 0 && miles === 0 && resto === 0;
-            return { texto: partes.join(' ').trim(), necesitaDe };
-        }
-
-        function clSeccionLetras(n) {
-            if (n === 0) return '';
-            if (n < 21) return ['','un','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte'][n];
-            if (n < 100) {
-                const decena = Math.floor(n / 10);
-                const unidad = n % 10;
-                const vals = ['', '', 'veinti', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
-                if (n < 30) return unidad === 0 ? 'veinte' : (unidad === 1 ? 'veintiún' : 'veinti' + ['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'][unidad]);
-                return unidad === 0 ? vals[decena] : vals[decena] + ' y ' + ['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'][unidad];
-            }
-            const centena = Math.floor(n / 100);
-            const resto = n % 100;
-            const vals = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
-            let str = vals[centena];
-            if (resto > 0) str += (str ? ' ' : '') + clSeccionLetras(resto);
-            return str;
-        }
-
-        function exportHtmlToPdf(htmlContent, fileName, buttonEl) {
-            const btn = buttonEl || null;
-            if (btn && btn.disabled) return;
-            if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-                alert('No se pudo cargar el generador de PDF. Verifica tu conexión a internet e intenta de nuevo.');
-                return;
+        function inicializarValoresContrato() {
+            const ahora = new Date();
+            const horaInput = document.getElementById('contratoHora');
+            if (horaInput && !horaInput.value) {
+                const hh = String(ahora.getHours()).padStart(2, '0');
+                const mm = String(ahora.getMinutes()).padStart(2, '0');
+                horaInput.value = `${hh}:${mm}`;
             }
 
-            const originalText = btn ? btn.textContent : '';
-            if (btn) {
-                btn.disabled = true;
-                btn.textContent = 'Generando...';
-            }
+            const cotFechaVal = document.getElementById('cotFecha')?.value;
+            const fechaInicioInput = document.getElementById('contratoFechaInicio');
+            const fechaFinInput = document.getElementById('contratoFechaFin');
 
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-            tempDiv.style.position = 'fixed';
-            tempDiv.style.left = '0';
-            tempDiv.style.top = '0';
-            tempDiv.style.width = '900px';
-            tempDiv.style.background = '#fff';
-            tempDiv.style.zIndex = '-1';
-            tempDiv.style.pointerEvents = 'none';
-            document.body.appendChild(tempDiv);
+            if (fechaInicioInput && !fechaInicioInput.value) {
+                const baseDate = cotFechaVal ? new Date(cotFechaVal + 'T00:00:00') : ahora;
+                const yyyy = baseDate.getFullYear();
+                const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(baseDate.getDate()).padStart(2, '0');
+                fechaInicioInput.value = `${yyyy}-${mm}-${dd}`;
 
-            const cleanup = () => {
-                if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = originalText;
+                if (fechaFinInput && !fechaFinInput.value) {
+                    const nextDay = new Date(baseDate);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    const y2 = nextDay.getFullYear();
+                    const m2 = String(nextDay.getMonth() + 1).padStart(2, '0');
+                    const d2 = String(nextDay.getDate()).padStart(2, '0');
+                    fechaFinInput.value = `${y2}-${m2}-${d2}`;
                 }
+            }
+
+            const clienteNombre = document.getElementById('clienteCot')?.value || '';
+            const ineInput = document.getElementById('contratoIneNombre');
+            const compNombreInput = document.getElementById('contratoComprobanteNombre');
+            if (ineInput && !ineInput.value && clienteNombre) ineInput.value = clienteNombre;
+            if (compNombreInput && !compNombreInput.value && clienteNombre) compNombreInput.value = clienteNombre;
+
+            actualizarTotalesCot();
+        }
+
+        function calcularDiasContrato() {
+            const inicioStr = document.getElementById('contratoFechaInicio')?.value;
+            const finStr = document.getElementById('contratoFechaFin')?.value;
+            const diasInput = document.getElementById('contratoDias');
+            if (inicioStr && finStr && diasInput) {
+                const d1 = new Date(inicioStr + 'T00:00:00');
+                const d2 = new Date(finStr + 'T00:00:00');
+                const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+                diasInput.value = diff > 0 ? diff : 1;
+            }
+        }
+
+        function formatearHora12(timeStr) {
+            if (!timeStr) {
+                const now = new Date();
+                let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const ampm = h >= 12 ? 'p.m.' : 'a.m.';
+                h = h % 12 || 12;
+                return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+            }
+            const [hStr, mStr] = timeStr.split(':');
+            let h = parseInt(hStr, 10);
+            const ampm = h >= 12 ? 'p.m.' : 'a.m.';
+            h = h % 12 || 12;
+            return `${String(h).padStart(2, '0')}:${mStr} ${ampm}`;
+        }
+
+        function obtenerPartesFecha(dateStr) {
+            const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+            const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            const d = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
+            return {
+                diaSemana: diasSemana[d.getDay()],
+                dia: d.getDate(),
+                mes: meses[d.getMonth()],
+                anio: d.getFullYear()
             };
+        }
 
-            setTimeout(() => {
-                html2canvas(tempDiv, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: false,
-                    backgroundColor: '#ffffff',
-                    windowWidth: tempDiv.scrollWidth,
-                    windowHeight: tempDiv.scrollHeight
-                }).then(canvas => {
-                    try {
-                        const { jsPDF } = window.jspdf;
-                        const pdf = new jsPDF({ unit: 'mm', format: 'letter', orientation: 'portrait' });
-                        const pageWidth = pdf.internal.pageSize.getWidth();
-                        const pageHeight = pdf.internal.pageSize.getHeight();
-                        const imgWidth = pageWidth;
-                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                        const imgData = canvas.toDataURL('image/png');
+        function buildContratoHTML() {
+            const cliente = (document.getElementById('clienteCot')?.value || '______________________').toUpperCase();
+            const celular = document.getElementById('telefonoCot')?.value || 'S/N';
+            const telFijo = document.getElementById('contratoTelFijo')?.value || '00';
+            const horaStr = formatearHora12(document.getElementById('contratoHora')?.value);
 
-                        let heightLeft = imgHeight;
-                        let position = 0;
-                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pageHeight;
+            const fechaCotStr = document.getElementById('cotFecha')?.value || document.getElementById('contratoFechaInicio')?.value;
+            const fCelebracion = obtenerPartesFecha(fechaCotStr);
+            const fechaCelebracionTexto = `${fCelebracion.diaSemana}, ${fCelebracion.dia} de ${fCelebracion.mes} de ${fCelebracion.anio}`;
 
-                        while (heightLeft > 0) {
-                            position = heightLeft - imgHeight;
-                            pdf.addPage();
-                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                            heightLeft -= pageHeight;
+            const fInicio = obtenerPartesFecha(document.getElementById('contratoFechaInicio')?.value);
+            const fFin = obtenerPartesFecha(document.getElementById('contratoFechaFin')?.value);
+
+            const diasNum = parseInt(document.getElementById('contratoDias')?.value) || 1;
+            const diasLetra = clConvertirEntero(diasNum).toUpperCase();
+            const duracionTexto = diasNum === 1 ? 'UN (1) DÍA NATURAL' : `${diasLetra} (${diasNum}) DÍAS NATURALES`;
+            const periodoTexto = `DEL DÍA ${fInicio.diaSemana.toUpperCase()} ${fInicio.dia} DE ${fInicio.mes.toUpperCase()} AL ${fFin.dia} DE ${fFin.mes.toUpperCase()} DEL ${fFin.anio}`;
+
+            const itemRows = document.querySelectorAll('#cotItemsBody tr');
+            const articulos = [];
+            itemRows.forEach(row => {
+                const desc = (row.querySelector('.cot-desc')?.value || '').trim().toUpperCase();
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                if (desc) articulos.push({ desc, cant });
+            });
+
+            let articulosHTML = '';
+            const maxSlots = Math.max(4, articulos.length);
+            for (let i = 0; i < maxSlots; i++) {
+                if (articulos[i]) {
+                    articulosHTML += `
+                        <tr>
+                            <td style="padding:2px 0; width:65%; font-weight:700;">${articulos[i].desc}</td>
+                            <td style="padding:2px 0; font-weight:700;">CANTIDAD ${articulos[i].cant}</td>
+                        </tr>`;
+                } else {
+                    articulosHTML += `
+                        <tr>
+                            <td style="padding:2px 0; width:65%;">NO APLICA OTRO,</td>
+                            <td style="padding:2px 0;">CANTIDAD N/A</td>
+                        </tr>`;
+                }
+            }
+
+            const observaciones = (document.getElementById('contratoObservaciones')?.value || '').toUpperCase();
+            const aditamentos = (document.getElementById('contratoAditamentos')?.value || '').toUpperCase();
+            const cantAditamentos = document.getElementById('contratoCantAditamentos')?.value || '0';
+            const domicilioCliente = (document.getElementById('contratoDomicilioCliente')?.value || '______________________').toUpperCase();
+            const ciudadCliente = (document.getElementById('contratoCiudadCliente')?.value || 'TEPIC, NAY., NAYARIT').toUpperCase();
+            const ineNombre = (document.getElementById('contratoIneNombre')?.value || cliente).toUpperCase();
+            const tipoComprobante = (document.getElementById('contratoTipoComprobante')?.value || 'CFE (COMISION FEDERAL DE ELECTRICIDAD)').toUpperCase();
+            const comprobanteNombre = (document.getElementById('contratoComprobanteNombre')?.value || cliente).toUpperCase();
+            const comprobanteParentesco = (document.getElementById('contratoComprobanteParentesco')?.value || 'PROPIO').toUpperCase();
+            const refNombre = (document.getElementById('contratoRefNombre')?.value || '______________________').toUpperCase();
+            const refTel = document.getElementById('contratoRefTel')?.value || '__________';
+            const refParentesco = (document.getElementById('contratoRefParentesco')?.value || '________________').toUpperCase();
+
+            const subtotalCot = actualizarTotalesCot();
+            const montoRentaInput = parseFloat(document.getElementById('contratoMontoRenta')?.value);
+            const montoRenta = !isNaN(montoRentaInput) ? montoRentaInput : subtotalCot;
+            const montoRentaLetras = numeroALetras(montoRenta).toUpperCase();
+            const montoFianza = parseFloat(document.getElementById('contratoFianza')?.value) || 0;
+            const montoFianzaLetras = numeroALetras(montoFianza).toUpperCase();
+            const cuotaLimpieza = parseFloat(document.getElementById('contratoCuotaLimpieza')?.value) || 50;
+            const cuotaLimpiezaLetras = numeroALetras(cuotaLimpieza).toUpperCase();
+
+            return `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Contrato de Arrendamiento - ${cliente}</title>
+                    <style>
+                        :root { color-scheme: light only; }
+                        * { box-sizing: border-box; }
+                        body {
+                            font-family: Arial, Helvetica, sans-serif;
+                            color: #000; background: #fff; margin: 0; padding: 0;
+                            font-size: 11.2px; line-height: 1.42; text-align: justify;
                         }
+                        .contract-container { max-width: 780px; margin: 0 auto; padding: 28px 40px; background: #fff; }
+                        .contract-title { text-align: center; font-weight: 800; font-size: 13.5px; letter-spacing: 2px; margin-bottom: 12px; }
+                        .section-header { text-align: center; font-weight: 800; font-size: 12.5px; letter-spacing: 3px; margin: 14px 0 10px 0; }
+                        p { margin: 0 0 9px 0; }
+                        .clause-title { font-weight: 800; margin-top: 10px; margin-bottom: 4px; }
+                        .items-list { width: 100%; border-collapse: collapse; margin: 6px 0 8px 18px; font-size: 11px; }
+                        .signatures { display: flex; justify-content: space-between; margin-top: 38px; gap: 30px; page-break-inside: avoid; }
+                        .sig-box { flex: 1; text-align: center; font-size: 11px; }
+                        .sig-space { height: 45px; }
+                        .sig-line { border-top: 1px solid #000; width: 85%; margin: 0 auto 6px auto; }
+                        @media print { body { margin: 0; } .contract-container { padding: 12mm 15mm; max-width: 100%; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="contract-container" id="contratoRenderRoot">
+                        <div class="contract-title">C O N T R A T O &nbsp; D E &nbsp; A R R E N D A M I E N T O &nbsp; D E &nbsp; M A Q U I N A R I A</div>
+                        <p>EN LA CIUDAD DE TEPIC, NAYARIT A <strong>${fechaCelebracionTexto}</strong>, A LAS <strong>${horaStr}</strong>, QUE CELEBRAN POR UNA PARTE <strong>HUANG SEBASTIAN LOPEZ ROJAS</strong> COMO "LA ARRENDADORA" Y POR OTRA PARTE <strong>${cliente}</strong> COMO "EL ARRENDATARIO".</p>
+                        <div class="section-header">D E C L A R A C I O N E S:</div>
+                        <p><strong>1.- DECLARA “HUANG SEBASTIAN LOPEZ ROJAS” COMO “LA ARRENDADORA”</strong> PARA LOS EFECTOS DEL ARTÍCULO 1784 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT.</p>
+                        <p><strong>1.1.</strong> “LA ARRENDADORA” DECLARA SER PROPIETARIA DE MAQUINARIA Y MOBILIARIO QUE PONE A DISPOSICIÓN EN ARRENDAMIENTO, ESPECIFICÁNDOSE EL EQUIPO SIGUIENTE:</p>
+                        <table class="items-list">${articulosHTML}</table>
+                        <p><strong>OBSERVACIONES, ESPECIFICAR:</strong> ${observaciones}<br><strong>OTROS ADITAMENTOS O ACCESORIOS:</strong> ${aditamentos} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CANTIDAD</strong> ${cantAditamentos}</p>
+                        <p><strong>2.- DECLARA “EL ARRENDATARIO” DE NOMBRE C. ${cliente}</strong> BAJO PROTESTA DE DECIR VERDAD Y PARA LOS EFECTOS DEL NUMERAL 1797 DEL CÓDIGO EN MATERIA.</p>
+                        <p><strong>2.1.</strong> TENER SU DOMICILIO EN <strong>${domicilioCliente} &nbsp; ${ciudadCliente}</strong>. SER DE NACIONALIDAD MEXICANA, MAYOR DE EDAD, HÁBIL PARA CONTRATAR, ENTREGANDO LA SIGUIENTE DOCUMENTACIÓN: IDENTIFICACIÓN OFICIAL INE A SU NOMBRE <strong>${ineNombre}</strong>, COMPROBANTE DE DOMICILIO DE <strong>${tipoComprobante}</strong> A NOMBRE DE <strong>${comprobanteNombre}</strong>, PARENTESCO <strong>${comprobanteParentesco}</strong>, TELÉFONOS DE CONTACTO FIJO <strong>${telFijo}</strong> Y/O CELULAR <strong>${celular}</strong>, CITA COMO REFERENCIA PERSONAL C. <strong>${refNombre}</strong> TEL <strong>${refTel}</strong> PARENTESCO <strong>${refParentesco}</strong>.</p>
+                        <p><strong>3.- POR LO QUE AMBAS PARTES DECLARAN:</strong> QUE ES SU DESEO CELEBRAR EL PRESENTE CONTRATO DE ARRENDAMIENTO POR TIEMPO DETERMINADO DE LA MAQUINARIA DESCRITA EN EL APARTADO 1.1 DE LAS DECLARACIONES, RECONOCIÉNDOSE CON LA RENTA QUE SE PACTA EN LA CLÁUSULA TERCERA.</p>
+                        <div class="section-header">C L Á U S U L A S:</div>
+                        <div class="clause-title">PRIMERA. OBJETO DEL CONTRATO.</div>
+                        <p>“LA ARRENDADORA” CEDE EN ARRENDAMIENTO EL CONJUNTO DE EQUIPO, MAQUINARIA O MOBILIARIO QUE SE HALLA DESCRITO EN EL APARTADO 1.1, EN PERFECTAS CONDICIONES DE USO Y A SU RESPECTIVO DESTINO.</p>
+                        <div class="clause-title">SEGUNDA. DURACIÓN DEL CONTRATO.</div>
+                        <p>AMBAS PARTES CONVIENEN EN QUE EL PRESENTE CONTRATO TENDRÁ UNA DURACIÓN DE <strong>${duracionTexto}</strong>, COMPRENDIDO <strong>${periodoTexto}</strong>. EN VIRTUD DE LO ANTERIOR, EL ARRENDAMIENTO INICIARÁ EL DÍA DE INICIO Y TERMINARÁ EL DÍA DE TÉRMINO PACTADO.</p>
+                        <div class="clause-title">TERCERA. REMUNERACIÓN.</div>
+                        <p>EN CONTRAPRESTACIÓN POR EL ARRENDAMIENTO, SE PACTA UNA RENTA TOTAL QUE ASCIENDE A LA CANTIDAD <strong>$ ${montoRenta.toFixed(2)} (${montoRentaLetras})</strong> ANTES DE IMPUESTOS.</p>
+                        <p>EL ARRENDATARIO SE COMPROMETE A PAGAR LA RENTA EN LOS PLAZOS ESTABLECIDOS, Y EN CASO DE MORA SE APLICARÁN LOS INTERESES CORRESPONDIENTES.</p>
+                        <div class="clause-title">SÉPTIMA. FIANZA O DEPÓSITO EN GARANTÍA.</div>
+                        <p>“EL ARRENDATARIO” ENTREGA EN ESTE ACTO LA SUMA DE <strong>$${montoFianza.toFixed(2)} (${montoFianzaLetras})</strong> MONEDA NACIONAL EN CONCEPTO DE FIANZA O DEPÓSITO EN GARANTÍA.</p>
+                        <div class="clause-title">NOVENA. LIMPIEZA DE LOS EQUIPOS, MAQUINARIA O MOBILIARIO.</div>
+                        <p>EL ARRENDATARIO DEBERÁ DEVOLVER LA MAQUINARIA EN LAS CONDICIONES DE LIMPIEZA Y ESTADO CORRESPONDIENTES, CONSIDERANDO EL USO NORMAL. EN CASO DE NO CUMPLIR, SE CARGARÁ LA CUOTA DE LIMPIEZA DE <strong>$${cuotaLimpieza.toFixed(2)} (${cuotaLimpiezaLetras})</strong>.</p>
+                        <div class="signatures">
+                            <div class="sig-box">
+                                <div class="sig-space"></div>
+                                <div class="sig-line"></div>
+                                <div>HUANG SEBASTIAN LOPEZ ROJAS</div>
+                                <div>ARRENDADORA</div>
+                            </div>
+                            <div class="sig-box">
+                                <div class="sig-space"></div>
+                                <div class="sig-line"></div>
+                                <div>${cliente}</div>
+                                <div>ARRENDATARIO</div>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
 
-                        pdf.save(fileName);
-                        cleanup();
-                    } catch (err) {
-                        console.error('Error generating PDF:', err);
-                        cleanup();
-                        alert('Ocurrió un error al generar el PDF: ' + err.message);
+        function abrirContratoVentana(html) {
+            const nuevaVentana = window.open('', '_blank', 'width=1200,height=900');
+            if (!nuevaVentana) return null;
+            nuevaVentana.document.write(html);
+            nuevaVentana.document.close();
+            nuevaVentana.focus();
+            return nuevaVentana;
+        }
+
+        function imprimirContratoRenta() {
+            const html = buildContratoHTML();
+            const win = abrirContratoVentana(html);
+            if (win) setTimeout(() => win.print(), 500);
+        }
+
+        function previewContratoRenta() {
+            const html = buildContratoHTML();
+            abrirContratoVentana(html);
+        }
+
+        function descargarContratoPDF() {
+            const html = buildContratoHTML();
+            const tempWindow = abrirContratoVentana(html);
+            if (!tempWindow || !window.jspdf) return;
+            setTimeout(() => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+                doc.html(tempWindow.document.body, {
+                    x: 10,
+                    y: 10,
+                    width: 190,
+                    autoPaging: true,
+                    callback: function (pdf) {
+                        pdf.save('contrato-arrendamiento.pdf');
+                        tempWindow.close();
                     }
-                }).catch(err => {
-                    console.error('Error rendering PDF:', err);
-                    cleanup();
-                    alert('Ocurrió un error al generar el PDF. Intenta de nuevo.');
                 });
-            }, 250);
-        }
-
-        function previewCotizacion(prefix) {
-            const html = buildCotizacionHTML(prefix || '');
-            const win = window.open('', '_blank');
-            if (!win) {
-                alert('El navegador bloqueó la ventana emergente. Permite pop-ups e intenta de nuevo.');
-                return;
-            }
-            win.document.write(html);
-            win.document.close();
-            win.focus();
-        }
-
-        function generarCotizacionPDF(prefix) {
-            const html = buildCotizacionHTML(prefix || '');
-            const win = window.open('', '_blank');
-            if (!win) {
-                alert('El navegador bloqueó la ventana emergente. Permite pop-ups e intenta de nuevo.');
-                return;
-            }
-            win.document.write(html);
-            win.document.close();
-            win.focus();
-            setTimeout(() => win.print(), 500);
-        }
-
-        function descargarCotizacionPDF(prefix) {
-            const btn = document.getElementById(prefix ? 'cotBtnDescargar_' + prefix : 'cotBtnDescargar');
-            const folioEl = document.getElementById(prefix ? 'cotFolio_' + prefix : 'cotFolio');
-            const folio = (folioEl && folioEl.value) ? folioEl.value : 'COT-0001';
-            const htmlContent = buildCotizacionHTML(prefix || '');
-            exportHtmlToPdf(htmlContent, 'Cotizacion_' + folio + '.pdf', btn);
-        }
-
-        function descargarOrdenCompraPDF(prefix) {
-            const btn = document.getElementById(prefix ? 'cotBtnOrdenCompra_' + prefix : 'cotBtnOrdenCompra');
-            const folioEl = document.getElementById(prefix ? 'cotFolio_' + prefix : 'cotFolio');
-            const folio = (folioEl && folioEl.value) ? folioEl.value : 'OC-0001';
-            const htmlContent = buildOrdenCompraHTML(prefix || '');
-            exportHtmlToPdf(htmlContent, 'OrdenCompra_' + folio + '.pdf', btn);
-        }
-
-        function calcularCelosia() {
-            const ancho = parseFloat(document.getElementById('celosiaAncho').value) || 0;
-            const alto = parseFloat(document.getElementById('celosiaAlto').value) || 0;
-            const unidad = document.getElementById('celosiaUnidad').value;
-            const piezas = parseInt(document.getElementById('celosiaCantidadPiezas').value) || 1;
-
-            let anchoM = ancho;
-            let altoM = alto;
-            if (unidad === 'cm') {
-                anchoM = ancho / 100;
-                altoM = alto / 100;
-            }
-
-            const superficie = (anchoM * altoM) * piezas;
-            const total = superficie * 2800;
-            const resultM2 = document.getElementById('celosiaResultadoM2');
-            const resultTotal = document.getElementById('celosiaResultadoTotal');
-
-            if (resultM2) resultM2.textContent = `Superficie: ${superficie.toFixed(2)} m²`;
-            if (resultTotal) resultTotal.textContent = `Total: ${formatMoney(total)}`;
+            }, 700);
         }
 
         function agregarCelosiaCalculada() {
+            const ancho = parseFloat(document.getElementById('celosiaAncho')?.value || 0);
+            const alto = parseFloat(document.getElementById('celosiaAlto')?.value || 0);
+            const cantidad = parseInt(document.getElementById('celosiaCantidadPiezas')?.value || 1, 10);
+            const precioBase = parseFloat(document.getElementById('celosiaPrecioM2')?.value || 0);
+            const material = document.getElementById('celosiaMaterial')?.value || 'Celosia14';
+            const isInox = document.getElementById('celosiaInoxidable')?.checked || false;
+
+            if (!ancho || !alto) return;
+
+            let precioFinal = precioBase;
+            if (isInox) precioFinal *= 1.4;
+
+            const superficieM2 = (ancho * alto * cantidad);
+            const total = superficieM2 * precioFinal;
+
             const tbody = document.getElementById('cotItemsBody_celosia');
             if (!tbody) return;
 
-            const ancho = parseFloat(document.getElementById('celosiaAncho').value) || 0;
-            const alto = parseFloat(document.getElementById('celosiaAlto').value) || 0;
-            const piezas = parseInt(document.getElementById('celosiaCantidadPiezas').value) || 1;
-            const material = document.getElementById('celosiaMaterial');
-            const precioM2 = parseFloat((material && material.selectedOptions[0]?.dataset?.precio) || document.getElementById('celosiaPrecioM2').value || 0) || 0;
-            const inox = document.getElementById('celosiaInoxidable')?.checked ? 1.4 : 1;
-            const anchoM = ancho;
-            const altoM = alto;
-            const superficie = (anchoM * altoM) * piezas;
-            const total = superficie * precioM2 * inox;
-
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td><input type="text" class="cot-desc" value="Celosía / ${material ? material.selectedOptions[0].text.trim() : 'Producto'}" placeholder="Descripción"></td>
-                <td><input type="number" class="cot-cant" value="${piezas}" min="1" oninput="updateCotTotals('celosia')"></td>
-                <td><input type="number" class="cot-precio" value="${total.toFixed(2)}" step="0.01" min="0" oninput="updateCotTotals('celosia')"></td>
+                <td><input type="text" class="cot-desc" value="Celosía ${material} (${Number(ancho).toFixed(2)} x ${Number(alto).toFixed(2)} m)" placeholder="Descripción"></td>
+                <td><input type="number" class="cot-cant" value="${cantidad}" min="1" oninput="updateCotTotals('celosia')"></td>
+                <td><input type="number" class="cot-precio" value="${precioFinal.toFixed(2)}" step="0.01" min="0" oninput="updateCotTotals('celosia')"></td>
                 <td class="cot-total">${formatMoney(total)}</td>
                 <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('celosia');">Eliminar</button></td>
             `;
             tbody.appendChild(row);
             updateCotTotals('celosia');
+        }
+
+        function generarCotizacionPDF(prefix) {
+            const html = buildCotizacionHTML(prefix, true);
+            const win = window.open('', '_blank', 'width=1200,height=900');
+            if (!win) return;
+            win.document.write(html);
+            win.document.close();
+            win.focus();
+            setTimeout(() => {
+                win.print();
+            }, 600);
+        }
+
+        function previewCotizacion(prefix) {
+            const html = buildCotizacionHTML(prefix, false);
+            const win = window.open('', '_blank', 'width=1200,height=900');
+            if (!win) return;
+            win.document.write(html);
+            win.document.close();
+            win.focus();
+        }
+
+        function descargarCotizacionPDF(prefix) {
+            const html = buildCotizacionHTML(prefix, false);
+            const win = window.open('', '_blank', 'width=1200,height=900');
+            if (!win) return;
+            win.document.write(html);
+            win.document.close();
+            win.focus();
+            setTimeout(() => {
+                if (window.jspdf) {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    pdf.html(win.document.body, {
+                        x: 10,
+                        y: 10,
+                        width: 190,
+                        autoPaging: true,
+                        callback: function (doc) {
+                            doc.save('cotizacion.pdf');
+                            win.close();
+                        }
+                    });
+                } else {
+                    win.print();
+                }
+            }, 700);
+        }
+
+        function descargarOrdenCompraPDF(prefix) {
+            const html = buildOrdenCompraHTML(prefix);
+            const win = window.open('', '_blank', 'width=1200,height=900');
+            if (!win) return;
+            win.document.write(html);
+            win.document.close();
+            win.focus();
+            setTimeout(() => {
+                if (window.jspdf) {
+                    const { jsPDF } = window.jspdf;
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+                    pdf.html(win.document.body, {
+                        x: 10,
+                        y: 10,
+                        width: 190,
+                        autoPaging: true,
+                        callback: function (doc) {
+                            doc.save('orden-compra.pdf');
+                            win.close();
+                        }
+                    });
+                } else {
+                    win.print();
+                }
+            }, 700);
         }
     </script>
 </body>
