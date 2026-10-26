@@ -505,7 +505,7 @@
             </div>
 
             <!-- ==================================================================== -->
-            <!-- MÓDULO CELOSÍA                                                       -->
+            <!-- MÓDULO CELOSÍA (CALCULADORA COSTOS 2026)                             -->
             <!-- ==================================================================== -->
             <div id="cot-module-celosia" class="cot-module" style="display:none">
                 <form id="formCot_celosia">
@@ -524,23 +524,51 @@
                         </div>
                     </div>
                     <div style="margin-top:16px;padding:16px;background:#fff8ef;border:1px solid #ffd9a0;border-radius:8px;">
-                        <p style="font-weight:700;margin-bottom:10px;color:#000;">Calculadora de corte — Celosía MDF calibre 14</p>
-                        <p style="font-size:0.85em;color:#666;margin-bottom:12px;">Precio base: $2,800.00 por m². Ingresa el tamaño de la pieza para calcular el costo.</p>
+                        <p style="font-weight:700;margin-bottom:10px;color:#000;">Calculadora de corte — Costos 2026</p>
+                        <p style="font-size:0.85em;color:#666;margin-bottom:12px;">Selecciona el producto y calibre y ajusta el precio por m² si lo necesitas. Ingresa el tamaño de la pieza para calcular el costo.</p>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="celosiaAncho">Ancho</label>
+                                <label for="celosiaMaterial">Producto / Calibre</label>
+                                <select id="celosiaMaterial">
+                                    <option value="SoloCorte14" data-precio="2580.00">Solo corte — Calibre 14</option>
+                                    <option value="SoloCorte12" data-precio="2380.00">Solo corte — Calibre 12</option>
+                                    <option value="Ventanal14" data-precio="3950.00">Ventanal — Calibre 14</option>
+                                    <option value="Ventanal12" data-precio="3750.00">Ventanal — Calibre 12</option>
+                                    <option value="Puerta14" data-precio="6630.00">Puerta — Calibre 14</option>
+                                    <option value="Puerta12" data-precio="6430.00">Puerta — Calibre 12</option>
+                                    <option value="ProteccionReja14" data-precio="5100.00">Protección reja — Calibre 14</option>
+                                    <option value="ProteccionReja12" data-precio="4900.00">Protección reja — Calibre 12</option>
+                                    <option value="ProteccionVentanal14" data-precio="3250.00">Protección ventanal — Calibre 14</option>
+                                    <option value="ProteccionVentanal12" data-precio="3050.00">Protección ventanal — Calibre 12</option>
+                                    <option value="Celosia14" data-precio="3250.00" selected>Celosía — Calibre 14</option>
+                                    <option value="Celosia12" data-precio="3050.00">Celosía — Calibre 12</option>
+                                    <option value="Barandal14" data-precio="3580.00">Barandal — Calibre 14</option>
+                                    <option value="Barandal12" data-precio="3380.00">Barandal — Calibre 12</option>
+                                    <option value="DividirArea14" data-precio="2930.00">Dividir área — Calibre 14</option>
+                                    <option value="DividirArea12" data-precio="2730.00">Dividir área — Calibre 12</option>
+                                    <option value="PergolaCelosia14" data-precio="4200.00">Pérgola con celosía — Calibre 14</option>
+                                    <option value="PergolaCelosia12" data-precio="4000.00">Pérgola con celosía — Calibre 12</option>
+                                    <option value="PergolaSinCelosia14" data-precio="2880.00">Pérgola sin celosía — Calibre 14</option>
+                                    <option value="PergolaSinCelosia12" data-precio="2680.00">Pérgola sin celosía — Calibre 12</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaPrecioM2">Precio por m² ($)</label>
+                                <input type="number" id="celosiaPrecioM2" min="0" step="0.01" value="3250.00">
+                            </div>
+                            <div class="form-group" style="display:flex;align-items:flex-end;">
+                                <label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;">
+                                    <input type="checkbox" id="celosiaInoxidable" style="width:auto;">
+                                    Acero Inoxidable (+40%)
+                                </label>
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaAncho">Ancho (m)</label>
                                 <input type="number" id="celosiaAncho" min="0" step="0.01" placeholder="0">
                             </div>
                             <div class="form-group">
-                                <label for="celosiaAlto">Alto</label>
+                                <label for="celosiaAlto">Alto (m)</label>
                                 <input type="number" id="celosiaAlto" min="0" step="0.01" placeholder="0">
-                            </div>
-                            <div class="form-group">
-                                <label for="celosiaUnidad">Unidad</label>
-                                <select id="celosiaUnidad">
-                                    <option value="cm">Centimetros</option>
-                                    <option value="m">Metros</option>
-                                </select>
                             </div>
                             <div class="form-group">
                                 <label for="celosiaCantidadPiezas">Cantidad de piezas</label>
@@ -2426,6 +2454,27 @@
             switchCotTab('general');
             ['', 'celosia', 'bordado', 'oc'].forEach(p => actualizarBotonIVA(p));
             toggleMenuContratoRenta();
+
+            // Listeners para la Calculadora de Celosía (Costos 2026)
+            ['celosiaAncho', 'celosiaAlto', 'celosiaCantidadPiezas'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularCelosia);
+            });
+
+            const celosiaMaterial = document.getElementById('celosiaMaterial');
+            if (celosiaMaterial) {
+                celosiaMaterial.addEventListener('change', function() {
+                    const precio = this.options[this.selectedIndex].getAttribute('data-precio');
+                    if (precio) document.getElementById('celosiaPrecioM2').value = precio;
+                    calcularCelosia();
+                });
+            }
+
+            const celosiaPrecioM2 = document.getElementById('celosiaPrecioM2');
+            if (celosiaPrecioM2) celosiaPrecioM2.addEventListener('input', calcularCelosia);
+
+            const celosiaInoxidable = document.getElementById('celosiaInoxidable');
+            if (celosiaInoxidable) celosiaInoxidable.addEventListener('change', calcularCelosia);
         });
 
         function toggleIVACot(prefix){
@@ -2460,29 +2509,31 @@
         }
 
         // ============================================================
-        //  Calculadora de Celosía — MDF calibre 14, $2,800.00 por m²
+        //  Calculadora de Celosía — Costos 2026
         // ============================================================
-        const PRECIO_M2_CELOSIA = 2800.00;
-
         function calcularCelosia() {
-            const ancho    = parseFloat(document.getElementById('celosiaAncho').value) || 0;
-            const alto     = parseFloat(document.getElementById('celosiaAlto').value)  || 0;
-            const unidad   = document.getElementById('celosiaUnidad').value;
-            const piezas   = parseInt(document.getElementById('celosiaCantidadPiezas').value) || 1;
+            const ancho  = parseFloat(document.getElementById('celosiaAncho').value) || 0;
+            const alto   = parseFloat(document.getElementById('celosiaAlto').value)  || 0;
+            const piezas = parseInt(document.getElementById('celosiaCantidadPiezas').value) || 1;
 
-            const anchoM = unidad === 'cm' ? ancho / 100 : ancho;
-            const altoM  = unidad === 'cm' ? alto  / 100 : alto;
+            let precioBase = parseFloat(document.getElementById('celosiaPrecioM2').value) || 0;
+            const esInoxidable = document.getElementById('celosiaInoxidable').checked;
 
-            const m2Unitario = anchoM * altoM;
+            if (esInoxidable) {
+                precioBase *= 1.40; // Aplica el +40%
+            }
+
+            const m2Unitario = ancho * alto;
             const m2Total    = m2Unitario * piezas;
-            const total      = m2Total * PRECIO_M2_CELOSIA;
+            const total      = m2Total * precioBase;
 
-            document.getElementById('celosiaResultadoM2').textContent =
-                `Superficie: ${m2Total.toFixed(2)} m² (${piezas} pieza${piezas !== 1 ? 's' : ''} de ${m2Unitario.toFixed(2)} m² c/u)`;
-            document.getElementById('celosiaResultadoTotal').textContent =
-                `Total: $${total.toFixed(2)}`;
+            const resM2 = document.getElementById('celosiaResultadoM2');
+            const resTotal = document.getElementById('celosiaResultadoTotal');
 
-            return { ancho, alto, unidad, piezas, m2Unitario, m2Total, total };
+            if (resM2) resM2.textContent = `Superficie: ${m2Total.toFixed(2)} m² (${piezas} pieza${piezas !== 1 ? 's' : ''} de ${m2Unitario.toFixed(2)} m² c/u)`;
+            if (resTotal) resTotal.textContent = `Total: $${total.toFixed(2)}`;
+
+            return { ancho, alto, piezas, m2Unitario, m2Total, total, precioBase };
         }
 
         function agregarCelosiaCalculada() {
@@ -2496,14 +2547,28 @@
             const tbody = document.getElementById('cotItemsBody_celosia');
             if (!tbody) return;
 
-            const descripcion = `Celosia MDF cal. 14 — ${datos.ancho}${datos.unidad} x ${datos.alto}${datos.unidad} (${datos.m2Unitario.toFixed(2)} m² c/u)`;
-            const precioUnitario = datos.m2Unitario * PRECIO_M2_CELOSIA;
+            const selector = document.getElementById('celosiaMaterial');
+            const nombreMaterial = selector.options[selector.selectedIndex].text;
+            const extraInoxidable = document.getElementById('celosiaInoxidable').checked ? ' (Acero Inoxidable)' : '';
+
+            const descripcion = `${nombreMaterial}${extraInoxidable} — ${datos.ancho}m x ${datos.alto}m (${datos.m2Unitario.toFixed(2)} m² c/u)`;
+            const precioUnitario = datos.m2Unitario * datos.precioBase;
+
+            // Si la primera fila está completamente vacía, la reutilizamos; si no, agregamos una nueva
+            const filas = tbody.querySelectorAll('tr');
+            if (filas.length === 1) {
+                const descActual = filas[0].querySelector('.cot-desc')?.value.trim();
+                const precioActual = parseFloat(filas[0].querySelector('.cot-precio')?.value) || 0;
+                if (!descActual && precioActual === 0) {
+                    tbody.innerHTML = '';
+                }
+            }
 
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><input type="text" class="cot-desc" value="${descripcion}"></td>
-                <td><input type="number" class="cot-cant" value="${datos.piezas}" min="1" onchange="updateCotTotals('celosia')"></td>
-                <td><input type="number" class="cot-precio" value="${precioUnitario.toFixed(2)}" step="0.01" min="0" onchange="updateCotTotals('celosia')"></td>
+                <td><input type="number" class="cot-cant" value="${datos.piezas}" min="1" oninput="updateCotTotals('celosia')" onchange="updateCotTotals('celosia')"></td>
+                <td><input type="number" class="cot-precio" value="${precioUnitario.toFixed(2)}" step="0.01" min="0" oninput="updateCotTotals('celosia')" onchange="updateCotTotals('celosia')"></td>
                 <td class="cot-total">$0.00</td>
                 <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('celosia');">Eliminar</button></td>
             `;
@@ -2513,15 +2578,9 @@
             document.getElementById('celosiaAncho').value = '';
             document.getElementById('celosiaAlto').value = '';
             document.getElementById('celosiaCantidadPiezas').value = '1';
+            document.getElementById('celosiaInoxidable').checked = false;
             calcularCelosia();
         }
-
-        ['celosiaAncho','celosiaAlto','celosiaUnidad','celosiaCantidadPiezas'].forEach(id => {
-            document.addEventListener('DOMContentLoaded', function() {
-                const el = document.getElementById(id);
-                if (el) el.addEventListener('input', calcularCelosia);
-            });
-        });
 
         // ============================================================
         //  Calculadora de Servicio de Bordado (por medida cm² y colores)
