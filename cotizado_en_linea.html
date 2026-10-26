@@ -1,0 +1,2686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcmex - Cotizado en línea</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .servicio-selector { display:flex; flex-wrap:wrap; gap:24px; align-items:center; row-gap:12px; }
+        .servicio-selector label {
+            display:flex; align-items:center; gap:9px; font-weight:400; font-size:14px;
+            color:#333; cursor:pointer; white-space:nowrap; margin:0;
+        }
+        .servicio-selector input[type="checkbox"] {
+            appearance:none; -webkit-appearance:none; -moz-appearance:none;
+            width:17px; height:17px; margin:0; border-radius:50%;
+            border:2px solid #b8b8b8; background:#fff; cursor:pointer;
+            position:relative; flex-shrink:0; transition:border-color .15s ease;
+        }
+        .servicio-selector input[type="checkbox"]:hover { border-color:#888; }
+        .servicio-selector input[type="checkbox"]:checked { border-color:#ef6c00; }
+        .servicio-selector input[type="checkbox"]:checked::after {
+            content:''; position:absolute; top:3px; left:3px; width:7px; height:7px;
+            border-radius:50%; background:#ef6c00;
+        }
+        .servicio-selector-title { font-weight:700; display:block; margin-bottom:12px; color:#222; }
+
+        /* Estilos del menú desplegable de Contrato de Arrendamiento */
+        .contrato-renta-panel {
+            display: none;
+            margin-top: 24px;
+            padding: 20px;
+            background: #fff8f1;
+            border: 2px solid #ef6c00;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(239, 108, 0, 0.08);
+            animation: fadeInPanel 0.25s ease-in-out;
+        }
+        .contrato-renta-panel.active {
+            display: block;
+        }
+        @keyframes fadeInPanel {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .contrato-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ffd8b5;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .contrato-header h3 {
+            margin: 0;
+            color: #d65f00;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .contrato-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #444;
+            margin: 16px 0 10px 0;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #e6d5c3;
+            letter-spacing: 0.4px;
+        }
+
+        /* Estilos del apartado rápido de Orden de Compra */
+        .oc-quick-panel {
+            margin-top: 20px;
+            padding: 16px 20px;
+            background: #f9fafb;
+            border: 1px solid #d1d5db;
+            border-left: 4px solid #111;
+            border-radius: 8px;
+        }
+        .oc-quick-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .oc-quick-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #111;
+        }
+
+        /* Etiquetas informativas de precios de bordado */
+        .bordado-tarifas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .bordado-tarifa-card {
+            background: #ffffff;
+            border: 1px solid #ffe0b2;
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 12px;
+            line-height: 1.4;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        .bordado-tarifa-card.activa {
+            border: 2px solid #ef6c00;
+            background: #fff3e0;
+            box-shadow: 0 2px 6px rgba(239, 108, 0, 0.15);
+        }
+        .bordado-tarifa-card strong {
+            display: block;
+            color: #d65f00;
+            margin-bottom: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <img src="LogoT.png" alt="TechnoMaQ Logo" class="header-logo">
+        <div class="header-content">
+            <h1>Arcmex</h1>
+            <p class="subtitle">Cotizado en línea</p>
+        </div>
+    </header>
+
+    <nav class="main-nav" style="display:flex; gap:12px; padding:12px; background:#fff; border-bottom:1px solid #e6e6e6;">
+        <a href="index.html" class="nav-link" style="text-decoration:none;">Inventario</a>
+        <a href="cotizado_en_linea.html" class="nav-link active" style="text-decoration:none; font-weight:700;">Cotizado en línea</a>
+        <a href="contabilidad.html" class="nav-link" style="text-decoration:none;">Contabilidad</a>
+        <a href="TECHNOBLOCK.html" class="nav-link" style="text-decoration:none;">TechnoBlock</a>
+    </nav>
+
+    <main class="container" style="padding:20px;">
+        <h2>Generar Cotización / Orden de Compra</h2>
+        <div class="note-card">
+            <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+                <button type="button" class="btn" onclick="switchCotTab('general')">General</button>
+                <button type="button" class="btn" onclick="switchCotTab('celosia')">Celosía</button>
+                <button type="button" class="btn" onclick="switchCotTab('bordado')">Bordado</button>
+                <button type="button" class="btn" style="background:#111; color:#fff;" onclick="switchCotTab('orden_compra')">Orden de Compra</button>
+            </div>
+
+            <!-- ==================================================================== -->
+            <!-- MÓDULO GENERAL                                                       -->
+            <!-- ==================================================================== -->
+            <div id="cot-module-general" class="cot-module" style="display:block">
+                <form id="formCotizacion">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cotFolio">Folio</label>
+                            <input type="text" id="cotFolio" placeholder="COT-0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotFecha">Fecha</label>
+                            <input type="date" id="cotFecha" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCot">Cliente (Nombre)</label>
+                            <input type="text" id="clienteCot" placeholder="Nombre del cliente">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefonoCot">Teléfono</label>
+                            <input type="tel" id="telefonoCot" placeholder="Ej: +52 311 123 4567">
+                        </div>
+                        <div class="form-group">
+                            <label for="correoCot">Correo</label>
+                            <input type="text" id="correoCot" placeholder="cliente@ejemplo.com (opcional)">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotMetodoPago">Método de Pago</label>
+                            <select id="cotMetodoPago">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="Crédito">Crédito</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="atiendeCot">Atiende (Nombre)</label>
+                            <input type="text" id="atiendeCot" placeholder="Nombre de la persona que atiende">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px;">
+                        <label class="servicio-selector-title">Tipo de Servicio</label>
+                        <div class="servicio-selector">
+                            <label><input type="checkbox" id="cotServRefacciones"> Refacciones</label>
+                            <label><input type="checkbox" id="cotServTecnico"> Servicio técnico</label>
+                            <label><input type="checkbox" id="cotServPreventivo"> Mantenimiento Preventivo</label>
+                            <label><input type="checkbox" id="cotServCorrectivo"> Mantenimiento correctivo</label>
+                            <label><input type="checkbox" id="cotServRenta" onchange="toggleMenuContratoRenta()"> Renta de equipo</label>
+                            <label><input type="checkbox" id="cotServVenta"> Venta de equipo</label>
+                            <label><input type="checkbox" id="cotServCorte"> Corte / maquila</label>
+                            <label><input type="checkbox" id="cotServDiseno"> Diseño</label>
+                            <label><input type="checkbox" id="cotServConsumibles"> Consumibles</label>
+                            <label><input type="checkbox" id="cotServCNC"> CNC</label>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label>Items</label>
+                        <table id="cotItemsTable" style="width:100%; border-collapse: collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:8px; text-align:left;">Descripción</th>
+                                    <th style="padding:8px; width:100px;">Cantidad</th>
+                                    <th style="padding:8px; width:140px;">Precio Unitario</th>
+                                    <th style="padding:8px; width:120px;">Total</th>
+                                    <th style="padding:8px; width:80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotItemsBody">
+                                <tr>
+                                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                                    <td><input type="number" class="cot-cant" value="1" min="1"></td>
+                                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0"></td>
+                                    <td class="cot-total">$0.00</td>
+                                    <td><button type="button" class="btn btn-danger" onclick="eliminarItemCot(this)">Eliminar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:8px; text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="agregarItemCot()">Agregar</button>
+                        </div>
+                        <div style="margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:14px;">
+                            <input type="checkbox" id="cotAplicaIVA" checked style="display:none">
+                            <button type="button" class="btn btn-success" id="cotBtnIVA" onclick="toggleIVACot('')">IVA: Incluido (16%)</button>
+                            <span><strong>Subtotal: </strong><span id="cotSubtotal">$0.00</span></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF()">Impresión Cotización</button>
+                        <button type="button" class="btn btn-warning" onclick="previewCotizacion()">Previsualizar Cotización</button>
+                        <button type="button" class="btn btn-success" id="cotBtnDescargar" onclick="descargarCotizacionPDF()">Descargar Cotización PDF</button>
+                    </div>
+
+                    <!-- ==================================================================== -->
+                    <!-- APARTADO RÁPIDO: GENERAR ORDEN DE COMPRA DESDE LA COTIZACIÓN ACTUAL   -->
+                    <!-- ==================================================================== -->
+                    <div class="oc-quick-panel">
+                        <div class="oc-quick-header">
+                            <div>
+                                <h3>🧾 Orden de Compra (Directa desde esta Cotización)</h3>
+                                <p style="margin:4px 0 0 0; font-size:12px; color:#555;">
+                                    Genera la Orden de Compra con los datos del cliente e ítems capturados arriba, o abre la pestaña <strong>Orden de Compra</strong> para personalizar más campos.
+                                </p>
+                            </div>
+                            <div style="display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap;">
+                                <div class="form-group" style="margin:0; min-width:140px;">
+                                    <label for="ocFolioRapido" style="font-size:12px;">No. Orden de Compra</label>
+                                    <input type="text" id="ocFolioRapido" value="OC-0001" placeholder="OC-0001">
+                                </div>
+                                <button type="button" class="btn btn-primary" onclick="imprimirOrdenCompra('general')">Imprimir OC</button>
+                                <button type="button" class="btn btn-warning" onclick="previewOrdenCompra('general')">Previsualizar OC</button>
+                                <button type="button" class="btn btn-success" id="btnDescargarOCRapido" onclick="descargarOrdenCompraPDF('general')">Descargar OC PDF</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================================================================== -->
+                    <!-- MENÚ DESPLEGABLE: CONTRATO DE ARRENDAMIENTO DE MAQUINARIA            -->
+                    <!-- ==================================================================== -->
+                    <div id="menuContratoRenta" class="contrato-renta-panel">
+                        <div class="contrato-header">
+                            <h3>📄 Generar Contrato de Arrendamiento de Maquinaria</h3>
+                            <span style="font-size:12px; color:#666;">Los artículos, cliente, teléfono y monto se sincronizan con la cotización</span>
+                        </div>
+
+                        <!-- 1. Fecha, Hora y Duración -->
+                        <div class="contrato-section-title">1. Lugar, Fecha y Vigencia del Arrendamiento (Cláusula Segunda)</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contratoHora">Hora de celebración</label>
+                                <input type="time" id="contratoHora">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoFechaInicio">Fecha de inicio</label>
+                                <input type="date" id="contratoFechaInicio" onchange="calcularDiasContrato()">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoFechaFin">Fecha de término</label>
+                                <input type="date" id="contratoFechaFin" onchange="calcularDiasContrato()">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoDias">Duración (Días naturales)</label>
+                                <input type="number" id="contratoDias" min="1" value="1">
+                            </div>
+                        </div>
+
+                        <!-- 2. Especificaciones adicionales del Equipo -->
+                        <div class="contrato-section-title">2. Observaciones y Aditamentos del Equipo (Declaración 1.1)</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoObservaciones">Observaciones del equipo (Especificar)</label>
+                                <input type="text" id="contratoObservaciones" placeholder="Ej: Equipo en óptimas condiciones, sin detalles...">
+                            </div>
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoAditamentos">Otros aditamentos o accesorios</label>
+                                <input type="text" id="contratoAditamentos" placeholder="Ej: Cables, extensiones, discos (opcional)">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoCantAditamentos">Cantidad Aditamentos</label>
+                                <input type="number" id="contratoCantAditamentos" min="0" value="0">
+                            </div>
+                        </div>
+
+                        <!-- 3. Datos y Documentación del Arrendatario -->
+                        <div class="contrato-section-title">3. Datos y Documentación de "El Arrendatario" (Declaración 2.1)</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoDomicilioCliente">Domicilio del Arrendatario (Calle, Número y Colonia)</label>
+                                <input type="text" id="contratoDomicilioCliente" placeholder="Ej: GUILLERMO VILLASANA 8 COL AVIACION">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoCiudadCliente">Ciudad y Estado</label>
+                                <input type="text" id="contratoCiudadCliente" value="TEPIC, NAY., NAYARIT">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoTelFijo">Teléfono de Contacto Fijo</label>
+                                <input type="text" id="contratoTelFijo" value="00" placeholder="Ej: 00 o 311...">
+                            </div>
+                        </div>
+
+                        <div class="form-row" style="margin-top:8px;">
+                            <div class="form-group">
+                                <label for="contratoIneNombre">Identificación Oficial INE a nombre de</label>
+                                <input type="text" id="contratoIneNombre" placeholder="Se autocompleta con el nombre del cliente">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoTipoComprobante">Comprobante de Domicilio de</label>
+                                <input type="text" id="contratoTipoComprobante" value="CFE (COMISION FEDERAL DE ELECTRICIDAD)">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoComprobanteNombre">Comprobante a nombre de</label>
+                                <input type="text" id="contratoComprobanteNombre" placeholder="Nombre del titular del recibo">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoComprobanteParentesco">Parentesco (Titular comprobante)</label>
+                                <input type="text" id="contratoComprobanteParentesco" placeholder="Ej: MAMA, PAPA, PROPIO">
+                            </div>
+                        </div>
+
+                        <!-- 4. Referencia Personal -->
+                        <div class="contrato-section-title">4. Referencia Personal (Declaración 2.1)</div>
+                        <div class="form-row">
+                            <div class="form-group" style="flex:2;">
+                                <label for="contratoRefNombre">Nombre de Referencia Personal (C.)</label>
+                                <input type="text" id="contratoRefNombre" placeholder="Ej: GALINDO GARCIA MARIA MAGDALENA">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoRefTel">Teléfono de Referencia</label>
+                                <input type="tel" id="contratoRefTel" placeholder="Ej: 3112674522">
+                            </div>
+                            <div class="form-group" style="flex:1;">
+                                <label for="contratoRefParentesco">Parentesco / Relación</label>
+                                <input type="text" id="contratoRefParentesco" placeholder="Ej: COMPAÑEROS DE TRABAJO">
+                            </div>
+                        </div>
+
+                        <!-- 5. Depósito en Garantía y Limpieza -->
+                        <div class="contrato-section-title">5. Fianza y Condiciones Adicionales (Cláusulas Tercera, Séptima y Novena)</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="contratoMontoRenta">Renta Total Pactada Antes de Impuestos ($)</label>
+                                <input type="number" id="contratoMontoRenta" step="0.01" min="0" placeholder="Se toma del Subtotal automáticamente">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoFianza">Fianza o Depósito en Garantía ($)</label>
+                                <input type="number" id="contratoFianza" step="0.01" min="0" value="0.00">
+                            </div>
+                            <div class="form-group">
+                                <label for="contratoCuotaLimpieza">Cuota por Limpieza ($)</label>
+                                <input type="number" id="contratoCuotaLimpieza" step="0.01" min="0" value="50.00">
+                            </div>
+                        </div>
+
+                        <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap; border-top:1px solid #ffd8b5; padding-top:14px;">
+                            <button type="button" class="btn btn-primary" onclick="imprimirContratoRenta()">Imprimir Contrato</button>
+                            <button type="button" class="btn btn-warning" onclick="previewContratoRenta()">Previsualizar Contrato</button>
+                            <button type="button" class="btn btn-success" id="btnDescargarContrato" onclick="descargarContratoPDF()">Descargar Contrato PDF</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ==================================================================== -->
+            <!-- MÓDULO ORDEN DE COMPRA (APARTADO COMPLETO)                            -->
+            <!-- ==================================================================== -->
+            <div id="cot-module-orden_compra" class="cot-module" style="display:none">
+                <form id="formCot_oc">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+                        <h3 style="margin:0; color:#111;">Generar Orden de Compra</h3>
+                        <button type="button" class="btn btn-secondary" onclick="importarDesdeCotizacionGeneral()">
+                            📥 Copiar datos e ítems de Cotización General
+                        </button>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cotFolio_oc">No. de Orden</label>
+                            <input type="text" id="cotFolio_oc" placeholder="OC-0001" value="OC-0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotFecha_oc">Fecha</label>
+                            <input type="date" id="cotFecha_oc" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotMetodoPago_oc">Pago</label>
+                            <select id="cotMetodoPago_oc">
+                                <option value="Efectivo">Efectivo</option>
+                                <option value="Transferencia">Transferencia</option>
+                                <option value="Tarjeta">Tarjeta</option>
+                                <option value="Crédito">Crédito</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="contrato-section-title">Solicitante / Cliente</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clienteCot_oc">Cliente</label>
+                            <input type="text" id="clienteCot_oc" placeholder="s/d">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefonoCot_oc">Teléfono</label>
+                            <input type="tel" id="telefonoCot_oc" placeholder="s/d">
+                        </div>
+                        <div class="form-group">
+                            <label for="correoCot_oc">Correo</label>
+                            <input type="text" id="correoCot_oc" placeholder="s/d">
+                        </div>
+                        <div class="form-group">
+                            <label for="atiendeCot_oc">Atiende</label>
+                            <input type="text" id="atiendeCot_oc" placeholder="s/d">
+                        </div>
+                    </div>
+
+                    <div class="contrato-section-title">Datos del Proveedor</div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ocProvEmpresa">Empresa</label>
+                            <input type="text" id="ocProvEmpresa" value="TECHNOMAQ SOLUCIONES">
+                        </div>
+                        <div class="form-group" style="flex:2;">
+                            <label for="ocProvDireccion">Dirección</label>
+                            <input type="text" id="ocProvDireccion" value="Av. de los Insurgentes oriente No. 2137, Col. Llanitos, Tepic, Nayarit">
+                        </div>
+                        <div class="form-group">
+                            <label for="ocProvTelefono">Teléfono</label>
+                            <input type="text" id="ocProvTelefono" value="311 489 9474 / 331 538 0857">
+                        </div>
+                        <div class="form-group">
+                            <label for="ocProvCorreo">Correo</label>
+                            <input type="text" id="ocProvCorreo" value="administracion@technomaq.mx">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label>Items (Orden de Compra)</label>
+                        <table style="width:100%; border-collapse: collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:8px; text-align:left;">Descripción</th>
+                                    <th style="padding:8px; width:100px;">Cantidad</th>
+                                    <th style="padding:8px; width:140px;">Precio Unitario</th>
+                                    <th style="padding:8px; width:120px;">Importe</th>
+                                    <th style="padding:8px; width:80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotItemsBody_oc">
+                                <tr>
+                                    <td><input type="text" class="cot-desc" placeholder="Sin descripción"></td>
+                                    <td><input type="number" class="cot-cant" value="1" min="1" oninput="updateCotTotals('oc')"></td>
+                                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0" oninput="updateCotTotals('oc')"></td>
+                                    <td class="cot-total">$0.00</td>
+                                    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('oc');">Eliminar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:8px; text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="agregarItemCot('oc')">Agregar</button>
+                        </div>
+                        <div style="margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:14px;">
+                            <input type="checkbox" id="cotAplicaIVA_oc" checked style="display:none">
+                            <button type="button" class="btn btn-success" id="cotBtnIVA_oc" onclick="toggleIVACot('oc')">IVA: Incluido (16%)</button>
+                            <span><strong>Subtotal: </strong><span id="cotSubtotal_oc">$0.00</span></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-primary" onclick="imprimirOrdenCompra('oc')">Impresión</button>
+                        <button type="button" class="btn btn-warning" onclick="previewOrdenCompra('oc')">Previsualizar</button>
+                        <button type="button" class="btn btn-success" id="btnDescargarOC_oc" onclick="descargarOrdenCompraPDF('oc')">Descargar PDF</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ==================================================================== -->
+            <!-- MÓDULO CELOSÍA                                                       -->
+            <!-- ==================================================================== -->
+            <div id="cot-module-celosia" class="cot-module" style="display:none">
+                <form id="formCot_celosia">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cotFolio_celosia">Folio</label>
+                            <input type="text" id="cotFolio_celosia" placeholder="COT-CE-0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotFecha_celosia">Fecha</label>
+                            <input type="date" id="cotFecha_celosia" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCot_celosia">Cliente (Nombre)</label>
+                            <input type="text" id="clienteCot_celosia" placeholder="Nombre del cliente">
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;padding:16px;background:#fff8ef;border:1px solid #ffd9a0;border-radius:8px;">
+                        <p style="font-weight:700;margin-bottom:10px;color:#000;">Calculadora de corte — Celosía MDF calibre 14</p>
+                        <p style="font-size:0.85em;color:#666;margin-bottom:12px;">Precio base: $2,800.00 por m². Ingresa el tamaño de la pieza para calcular el costo.</p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="celosiaAncho">Ancho</label>
+                                <input type="number" id="celosiaAncho" min="0" step="0.01" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaAlto">Alto</label>
+                                <input type="number" id="celosiaAlto" min="0" step="0.01" placeholder="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaUnidad">Unidad</label>
+                                <select id="celosiaUnidad">
+                                    <option value="cm">Centimetros</option>
+                                    <option value="m">Metros</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="celosiaCantidadPiezas">Cantidad de piezas</label>
+                                <input type="number" id="celosiaCantidadPiezas" min="1" value="1">
+                            </div>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px;">
+                            <div style="font-size:0.9em;color:#333;">
+                                <span id="celosiaResultadoM2">Superficie: 0.00 m²</span>
+                                &nbsp;·&nbsp;
+                                <strong id="celosiaResultadoTotal">Total: $0.00</strong>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="agregarCelosiaCalculada()">Agregar a la cotización</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label>Items (Celosía)</label>
+                        <table style="width:100%; border-collapse: collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:8px; text-align:left;">Descripción</th>
+                                    <th style="padding:8px; width:100px;">Cantidad</th>
+                                    <th style="padding:8px; width:140px;">Precio Unitario</th>
+                                    <th style="padding:8px; width:120px;">Total</th>
+                                    <th style="padding:8px; width:80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotItemsBody_celosia">
+                                <tr>
+                                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                                    <td><input type="number" class="cot-cant" value="1" min="1"></td>
+                                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0"></td>
+                                    <td class="cot-total">$0.00</td>
+                                    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('celosia');">Eliminar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:8px; text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="agregarItemCot('celosia')">Agregar</button>
+                        </div>
+                        <div style="margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:14px;">
+                            <input type="checkbox" id="cotAplicaIVA_celosia" style="display:none">
+                            <button type="button" class="btn btn-secondary" id="cotBtnIVA_celosia" onclick="toggleIVACot('celosia')">IVA: No incluido</button>
+                            <span><strong>Subtotal: </strong><span id="cotSubtotal_celosia">$0.00</span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <label class="servicio-selector-title">Tipo de Servicio</label>
+                        <div class="servicio-selector">
+                            <label><input type="checkbox" id="cotServRefacciones_celosia"> Refacciones</label>
+                            <label><input type="checkbox" id="cotServTecnico_celosia"> Servicio técnico</label>
+                            <label><input type="checkbox" id="cotServPreventivo_celosia"> Mantenimiento Preventivo</label>
+                            <label><input type="checkbox" id="cotServCorrectivo_celosia"> Mantenimiento correctivo</label>
+                            <label><input type="checkbox" id="cotServRenta_celosia"> Renta de equipo</label>
+                            <label><input type="checkbox" id="cotServVenta_celosia"> Venta de equipo</label>
+                            <label><input type="checkbox" id="cotServCorte_celosia" checked> Corte / maquila</label>
+                            <label><input type="checkbox" id="cotServDiseno_celosia"> Diseño</label>
+                            <label><input type="checkbox" id="cotServConsumibles_celosia"> Consumibles</label>
+                            <label><input type="checkbox" id="cotServCNC_celosia"> CNC</label>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:10px;">
+                        <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF('celosia')">Impresión</button>
+                        <button type="button" class="btn btn-warning" onclick="previewCotizacion('celosia')">Previsualizar</button>
+                        <button type="button" class="btn btn-success" id="cotBtnDescargar_celosia" onclick="descargarCotizacionPDF('celosia')">Descargar PDF</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- ==================================================================== -->
+            <!-- MÓDULO BORDADO (CON CALCULADORA POR MEDIDA Y COLORES)                -->
+            <!-- ==================================================================== -->
+            <div id="cot-module-bordado" class="cot-module" style="display:none">
+                <form id="formCot_bordado">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cotFolio_bordado">Folio</label>
+                            <input type="text" id="cotFolio_bordado" placeholder="COT-BO-0001">
+                        </div>
+                        <div class="form-group">
+                            <label for="cotFecha_bordado">Fecha</label>
+                            <input type="date" id="cotFecha_bordado" value="">
+                        </div>
+                        <div class="form-group">
+                            <label for="clienteCot_bordado">Cliente (Nombre)</label>
+                            <input type="text" id="clienteCot_bordado" placeholder="Nombre del cliente">
+                        </div>
+                    </div>
+
+                    <!-- Calculadora de Servicio de Bordado -->
+                    <div style="margin-top:16px;padding:16px;background:#fff8ef;border:1px solid #ffd9a0;border-radius:8px;">
+                        <p style="font-weight:700;margin-bottom:6px;color:#000;">Calculadora de Servicio de Bordado</p>
+                        <p style="font-size:0.85em;color:#666;margin-bottom:12px;">
+                            Ingresa el ancho y alto en cm (o directamente el área en cm²) y selecciona la cantidad de colores para calcular el costo según el tabulador.
+                        </p>
+
+                        <!-- Tarjetas de referencia del tabulador -->
+                        <div class="bordado-tarifas-grid">
+                            <div class="bordado-tarifa-card" id="tarifaCard_1">
+                                <strong>Menor a 7cm2</strong>
+                                <div>Varios colores: <b>$90.00</b></div>
+                                <div>Un solo color: <b>$80.00</b></div>
+                            </div>
+                            <div class="bordado-tarifa-card" id="tarifaCard_1">
+                                <strong>De 7 cm² a 10 cm²</strong>
+                                <div>Varios colores: <b>$150.00</b></div>
+                                <div>Un solo color: <b>$95.00</b></div>
+                            </div>
+                            <div class="bordado-tarifa-card" id="tarifaCard_2">
+                                <strong>De 11 cm² a 15 cm²</strong>
+                                <div>Varios colores: <b>$200.00</b></div>
+                                <div>Un solo color: <b>$180.00</b></div>
+                            </div>
+                            <div class="bordado-tarifa-card" id="tarifaCard_3">
+                                <strong>De 16 cm² a 20 cm²</strong>
+                                <div>Varios colores: <b>$250.00</b></div>
+                                <div>Un solo color: <b>$220.00</b></div>
+                            </div>
+                            <div class="bordado-tarifa-card" id="tarifaCard_4">
+                                <strong>De 21 cm² a 30 cm²</strong>
+                                <div>Varios colores: <b>$300.00</b></div>
+                                <div>Un solo color: <b>$260.00</b></div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="bordadoAncho">Ancho (cm)</label>
+                                <input type="number" id="bordadoAncho" min="0" step="0.1" placeholder="Ej: 3">
+                            </div>
+                            <div class="form-group">
+                                <label for="bordadoAlto">Alto (cm)</label>
+                                <input type="number" id="bordadoAlto" min="0" step="0.1" placeholder="Ej: 3">
+                            </div>
+                            <div class="form-group">
+                                <label for="bordadoAreaCm2">Medida / Área (cm²)</label>
+                                <input type="number" id="bordadoAreaCm2" min="0" step="0.01" placeholder="7 a 30 cm²">
+                            </div>
+                            <div class="form-group">
+                                <label for="bordadoTipoColor">Colores</label>
+                                <select id="bordadoTipoColor">
+                                    <option value="varios">Varios colores</option>
+                                    <option value="uno">Un solo color</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bordadoCantidadPiezas">Cantidad de piezas</label>
+                                <input type="number" id="bordadoCantidadPiezas" min="1" value="1">
+                            </div>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px;">
+                            <div style="font-size:0.9em;color:#333;">
+                                <span id="bordadoResultadoInfo">Área: 0.00 cm²</span>
+                                &nbsp;·&nbsp;
+                                <span id="bordadoResultadoUnitario">Precio unitario: $0.00</span>
+                                &nbsp;·&nbsp;
+                                <strong id="bordadoResultadoTotal">Total: $0.00</strong>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="agregarBordadoCalculado()">Agregar a la cotización</button>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:12px;">
+                        <label>Items (Bordado)</label>
+                        <table style="width:100%; border-collapse: collapse; margin-top:8px;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:8px; text-align:left;">Descripción</th>
+                                    <th style="padding:8px; width:100px;">Cantidad</th>
+                                    <th style="padding:8px; width:140px;">Precio Unitario</th>
+                                    <th style="padding:8px; width:120px;">Total</th>
+                                    <th style="padding:8px; width:80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="cotItemsBody_bordado">
+                                <tr>
+                                    <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                                    <td><input type="number" class="cot-cant" value="1" min="1"></td>
+                                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0"></td>
+                                    <td class="cot-total">$0.00</td>
+                                    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('bordado');">Eliminar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="margin-top:8px; text-align:right;">
+                            <button type="button" class="btn btn-secondary" onclick="agregarItemCot('bordado')">Agregar</button>
+                        </div>
+                        <div style="margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:14px;">
+                            <input type="checkbox" id="cotAplicaIVA_bordado" style="display:none">
+                            <button type="button" class="btn btn-secondary" id="cotBtnIVA_bordado" onclick="toggleIVACot('bordado')">IVA: No incluido</button>
+                            <span><strong>Subtotal: </strong><span id="cotSubtotal_bordado">$0.00</span></span>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px;">
+                        <label class="servicio-selector-title">Tipo de Servicio</label>
+                        <div class="servicio-selector">
+                            <label><input type="checkbox" id="cotServRefacciones_bordado"> Refacciones</label>
+                            <label><input type="checkbox" id="cotServTecnico_bordado"> Servicio técnico</label>
+                            <label><input type="checkbox" id="cotServPreventivo_bordado"> Mantenimiento Preventivo</label>
+                            <label><input type="checkbox" id="cotServCorrectivo_bordado"> Mantenimiento correctivo</label>
+                            <label><input type="checkbox" id="cotServRenta_bordado"> Renta de equipo</label>
+                            <label><input type="checkbox" id="cotServVenta_bordado"> Venta de equipo</label>
+                            <label><input type="checkbox" id="cotServCorte_bordado"> Corte / maquila</label>
+                            <label><input type="checkbox" id="cotServDiseno_bordado" checked> Diseño</label>
+                            <label><input type="checkbox" id="cotServConsumibles_bordado"> Consumibles</label>
+                            <label><input type="checkbox" id="cotServCNC_bordado"> CNC</label>
+                        </div>
+                    </div>
+                    <div style="margin-top:16px; display:flex; gap:10px;">
+                        <button type="button" class="btn btn-primary" onclick="generarCotizacionPDF('bordado')">Impresión</button>
+                        <button type="button" class="btn btn-warning" onclick="previewCotizacion('bordado')">Previsualizar</button>
+                        <button type="button" class="btn btn-success" id="cotBtnDescargar_bordado" onclick="descargarCotizacionPDF('bordado')">Descargar PDF</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        const cotPrefixes = ['celosia', 'bordado', 'orden_compra'];
+
+        function switchCotTab(tab){
+            const generalEl = document.getElementById('cot-module-general');
+            if(tab === 'general'){
+                if(generalEl) generalEl.style.display = 'block';
+                cotPrefixes.forEach(pref => {
+                    const el = document.getElementById('cot-module-' + pref);
+                    if(el) el.style.display = 'none';
+                });
+                return;
+            }
+
+            if(generalEl) generalEl.style.display = 'none';
+            cotPrefixes.forEach(pref => {
+                const el = document.getElementById('cot-module-' + pref);
+                if(!el) return;
+                el.style.display = (pref === tab) ? 'block' : 'none';
+            });
+        }
+
+        function agregarItemCot(prefix){
+            if (prefix) {
+                const tbody = document.getElementById('cotItemsBody_' + prefix);
+                if(!tbody) return;
+                const placeholderText = prefix === 'oc' ? 'Sin descripción' : 'Descripción';
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><input type="text" class="cot-desc" placeholder="${placeholderText}"></td>
+                    <td><input type="number" class="cot-cant" value="1" min="1" oninput="updateCotTotals('${prefix}')" onchange="updateCotTotals('${prefix}')"></td>
+                    <td><input type="number" class="cot-precio" value="0" step="0.01" min="0" oninput="updateCotTotals('${prefix}')" onchange="updateCotTotals('${prefix}')"></td>
+                    <td class="cot-total">$0.00</td>
+                    <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('${prefix}');">Eliminar</button></td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
+
+            const tbody = document.getElementById('cotItemsBody');
+            if(!tbody) return;
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="cot-desc" placeholder="Descripción"></td>
+                <td><input type="number" class="cot-cant" value="1" min="1" oninput="actualizarTotalesCot()"></td>
+                <td><input type="number" class="cot-precio" value="0" step="0.01" min="0" oninput="actualizarTotalesCot()"></td>
+                <td class="cot-total">$0.00</td>
+                <td><button type="button" class="btn btn-danger" onclick="eliminarItemCot(this)">Eliminar</button></td>
+            `;
+            tbody.appendChild(row);
+            actualizarTotalesCot();
+        }
+
+        function updateCotTotals(prefix){
+            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
+            let subtotal = 0;
+            rows.forEach(r => {
+                const cant = parseFloat(r.querySelector('.cot-cant')?.value || 0);
+                const precio = parseFloat(r.querySelector('.cot-precio')?.value || 0);
+                const total = (cant * precio) || 0;
+                const totalCell = r.querySelector('.cot-total');
+                if(totalCell) totalCell.textContent = '$' + total.toFixed(2);
+                subtotal += total;
+            });
+            const subtotalEl = document.getElementById(prefix ? 'cotSubtotal_' + prefix : 'cotSubtotal');
+            if(subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+            return subtotal;
+        }
+
+        function actualizarTotalesCot() {
+            const rows = document.querySelectorAll('#cotItemsBody tr');
+            let subtotal = 0;
+            rows.forEach(row => {
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                const precio = parseFloat(row.querySelector('.cot-precio')?.value) || 0;
+                const total = cant * precio;
+                const tdTotal = row.querySelector('.cot-total');
+                if (tdTotal) tdTotal.textContent = formatMoney(total);
+                subtotal += total;
+            });
+            const subtotalEl = document.getElementById('cotSubtotal');
+            if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
+
+            const montoContratoInput = document.getElementById('contratoMontoRenta');
+            if (montoContratoInput && !montoContratoInput.dataset.manual) {
+                montoContratoInput.value = subtotal.toFixed(2);
+            }
+            return subtotal;
+        }
+
+        function formatMoney(v) { return '$' + (v || 0).toFixed(2); }
+
+        // ============================================================
+        //  Conversor de número a letras (pesos MXN)
+        // ============================================================
+        const CL_UNIDADES = ['', 'un', 'dos', 'tres', 'cuatro', 'cinco', 'seis', 'siete', 'ocho', 'nueve', 'diez',
+            'once', 'doce', 'trece', 'catorce', 'quince', 'dieciséis', 'diecisiete', 'dieciocho', 'diecinueve', 'veinte'];
+        const CL_DECENAS = ['', '', 'veinti', 'treinta', 'cuarenta', 'cincuenta', 'sesenta', 'setenta', 'ochenta', 'noventa'];
+        const CL_CENTENAS = ['', 'ciento', 'doscientos', 'trescientos', 'cuatrocientos', 'quinientos', 'seiscientos', 'setecientos', 'ochocientos', 'novecientos'];
+
+        function clDecenasLetras(n) {
+            if (n < 21) return CL_UNIDADES[n];
+            const decena = Math.floor(n / 10);
+            const unidad = n % 10;
+            if (n < 30) return unidad === 0 ? 'veinte' : 'veinti' + CL_UNIDADES[unidad];
+            return unidad === 0 ? CL_DECENAS[decena] : CL_DECENAS[decena] + ' y ' + CL_UNIDADES[unidad];
+        }
+
+        function clCentenasLetras(n) {
+            if (n === 100) return 'cien';
+            const centena = Math.floor(n / 100);
+            const resto = n % 100;
+            let str = CL_CENTENAS[centena];
+            if (resto > 0) str += (str ? ' ' : '') + clDecenasLetras(resto);
+            return str;
+        }
+
+        function clSeccionLetras(n) {
+            if (n === 0) return '';
+            if (n < 21) return CL_UNIDADES[n];
+            if (n < 100) return clDecenasLetras(n);
+            return clCentenasLetras(n);
+        }
+
+        function clConvertirEntero(n) {
+            if (n === 0) return 'cero';
+            const partes = [];
+            const millones = Math.floor(n / 1000000);
+            const miles = Math.floor((n % 1000000) / 1000);
+            const resto = n % 1000;
+            if (millones > 0) partes.push(millones === 1 ? 'un millón' : clSeccionLetras(millones) + ' millones');
+            if (miles > 0) partes.push(miles === 1 ? 'mil' : clSeccionLetras(miles) + ' mil');
+            if (resto > 0) partes.push(clSeccionLetras(resto));
+            return partes.join(' ').trim();
+        }
+
+        function numeroALetras(num) {
+            num = Math.round((num || 0) * 100) / 100;
+            const entero = Math.floor(num);
+            const centavos = Math.round((num - entero) * 100);
+            let letras = clConvertirEntero(entero);
+            letras = letras.charAt(0).toUpperCase() + letras.slice(1);
+            const centavosStr = centavos.toString().padStart(2, '0');
+            return `${letras} pesos ${centavosStr}/100 M.N.`;
+        }
+
+        // ============================================================
+        //  GENERADOR DE ORDEN DE COMPRA (Formato OrdenCompra_OC-0001)
+        // ============================================================
+        function obtenerFechaISOActual() {
+            const ahora = new Date();
+            const yyyy = ahora.getFullYear();
+            const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+            const dd = String(ahora.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        function importarDesdeCotizacionGeneral() {
+            document.getElementById('cotFecha_oc').value = document.getElementById('cotFecha').value || obtenerFechaISOActual();
+            document.getElementById('cotMetodoPago_oc').value = document.getElementById('cotMetodoPago').value || 'Efectivo';
+            document.getElementById('clienteCot_oc').value = document.getElementById('clienteCot').value || '';
+            document.getElementById('telefonoCot_oc').value = document.getElementById('telefonoCot').value || '';
+            document.getElementById('correoCot_oc').value = document.getElementById('correoCot').value || '';
+            document.getElementById('atiendeCot_oc').value = document.getElementById('atiendeCot').value || '';
+
+            const ivaGeneral = document.getElementById('cotAplicaIVA')?.checked ?? true;
+            const ivaOc = document.getElementById('cotAplicaIVA_oc');
+            if (ivaOc) {
+                ivaOc.checked = ivaGeneral;
+                actualizarBotonIVA('oc');
+            }
+
+            const tbodyGeneral = document.querySelectorAll('#cotItemsBody tr');
+            const tbodyOc = document.getElementById('cotItemsBody_oc');
+            if (tbodyOc) {
+                tbodyOc.innerHTML = '';
+                tbodyGeneral.forEach(r => {
+                    const desc = r.querySelector('.cot-desc')?.value || '';
+                    const cant = r.querySelector('.cot-cant')?.value || '1';
+                    const precio = r.querySelector('.cot-precio')?.value || '0';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td><input type="text" class="cot-desc" placeholder="Sin descripción" value="${desc.replace(/"/g, '&quot;')}"></td>
+                        <td><input type="number" class="cot-cant" value="${cant}" min="1" oninput="updateCotTotals('oc')" onchange="updateCotTotals('oc')"></td>
+                        <td><input type="number" class="cot-precio" value="${precio}" step="0.01" min="0" oninput="updateCotTotals('oc')" onchange="updateCotTotals('oc')"></td>
+                        <td class="cot-total">$0.00</td>
+                        <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('oc');">Eliminar</button></td>
+                    `;
+                    tbodyOc.appendChild(tr);
+                });
+                updateCotTotals('oc');
+            }
+        }
+
+        function buildOrdenCompraHTML(source) {
+            const isOC = (source === 'oc');
+
+            const folio = isOC
+                ? (document.getElementById('cotFolio_oc')?.value.trim() || 'OC-0001')
+                : (document.getElementById('ocFolioRapido')?.value.trim() || 'OC-0001');
+
+            const fechaRaw = isOC
+                ? document.getElementById('cotFecha_oc')?.value
+                : document.getElementById('cotFecha')?.value;
+            const fecha = fechaRaw || obtenerFechaISOActual();
+
+            const pago = (isOC
+                ? document.getElementById('cotMetodoPago_oc')?.value
+                : document.getElementById('cotMetodoPago')?.value) || 'Efectivo';
+
+            const cliente = (isOC
+                ? document.getElementById('clienteCot_oc')?.value
+                : document.getElementById('clienteCot')?.value)?.trim() || 's/d';
+
+            const telefono = (isOC
+                ? document.getElementById('telefonoCot_oc')?.value
+                : document.getElementById('telefonoCot')?.value)?.trim() || 's/d';
+
+            const correo = (isOC
+                ? document.getElementById('correoCot_oc')?.value
+                : document.getElementById('correoCot')?.value)?.trim() || 's/d';
+
+            const atiende = (isOC
+                ? document.getElementById('atiendeCot_oc')?.value
+                : document.getElementById('atiendeCot')?.value)?.trim() || 's/d';
+
+            const provEmpresa = document.getElementById('ocProvEmpresa')?.value?.trim() || 'TECHNOMAQ SOLUCIONES';
+            const provDireccion = document.getElementById('ocProvDireccion')?.value?.trim() || 'Av. de los Insurgentes oriente No. 2137, Col. Llanitos, Tepic, Nayarit';
+            const provTelefono = document.getElementById('ocProvTelefono')?.value?.trim() || '311 489 9474 / 331 538 0857';
+            const provCorreo = document.getElementById('ocProvCorreo')?.value?.trim() || 'administracion@technomaq.mx';
+
+            const rowsSelector = isOC ? '#cotItemsBody_oc tr' : '#cotItemsBody tr';
+            const rows = document.querySelectorAll(rowsSelector);
+
+            let itemsHTML = '';
+            let subtotal = 0;
+
+            if (rows.length === 0) {
+                itemsHTML = `
+                    <tr>
+                        <td style="text-align:center;">1</td>
+                        <td>Sin descripción</td>
+                        <td style="text-align:center;">1</td>
+                        <td style="text-align:right;">$0.00</td>
+                        <td style="text-align:right;">$0.00</td>
+                    </tr>
+                `;
+            } else {
+                rows.forEach((row, idx) => {
+                    const desc = (row.querySelector('.cot-desc')?.value || '').trim() || 'Sin descripción';
+                    const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                    const precio = parseFloat(row.querySelector('.cot-precio')?.value) || 0;
+                    const importe = cant * precio;
+                    subtotal += importe;
+                    itemsHTML += `
+                        <tr>
+                            <td style="text-align:center;">${idx + 1}</td>
+                            <td>${desc}</td>
+                            <td style="text-align:center;">${cant}</td>
+                            <td style="text-align:right;">${formatMoney(precio)}</td>
+                            <td style="text-align:right;">${formatMoney(importe)}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            const ivaCheck = document.getElementById(isOC ? 'cotAplicaIVA_oc' : 'cotAplicaIVA');
+            const aplicaIVA = ivaCheck ? ivaCheck.checked : true;
+            const iva = aplicaIVA ? subtotal * 0.16 : 0;
+            const total = subtotal + iva;
+
+            return `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Orden de Compra ${folio}</title>
+                    <style>
+                        :root { color-scheme: light only; }
+                        * { box-sizing: border-box; }
+                        html, body {
+                            margin: 0;
+                            padding: 0;
+                            background: #ffffff;
+                            font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif;
+                            color: #111111;
+                        }
+                        .oc-page {
+                            max-width: 800px;
+                            margin: 0 auto;
+                            background: #ffffff;
+                            padding-bottom: 30px;
+                        }
+                        .oc-banner {
+                            background: #141414;
+                            color: #ffffff;
+                            padding: 24px 34px;
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: flex-start;
+                            border-bottom: 4px solid #ef6c00;
+                        }
+                        .oc-brand-title {
+                            color: #ef6c00;
+                            font-size: 25px;
+                            font-weight: 900;
+                            letter-spacing: 0.5px;
+                            line-height: 1.1;
+                        }
+                        .oc-brand-sub {
+                            color: #ef6c00;
+                            font-size: 12px;
+                            letter-spacing: 3.5px;
+                            margin-top: 5px;
+                            font-weight: 500;
+                        }
+                        .oc-doc-info {
+                            text-align: right;
+                        }
+                        .oc-doc-title {
+                            font-size: 22px;
+                            font-weight: 800;
+                            color: #ffffff;
+                            letter-spacing: 0.4px;
+                            margin-bottom: 8px;
+                        }
+                        .oc-doc-meta {
+                            font-size: 11.5px;
+                            line-height: 1.6;
+                            color: #f3f4f6;
+                        }
+                        .oc-body {
+                            padding: 22px 34px;
+                        }
+                        .oc-cards {
+                            display: flex;
+                            gap: 18px;
+                        }
+                        .oc-card {
+                            flex: 1;
+                            border: 1px solid #e5e7eb;
+                            border-left: 4px solid #ef6c00;
+                            background: #fafafa;
+                            padding: 12px 16px;
+                            font-size: 11.5px;
+                            line-height: 1.65;
+                            color: #1f2937;
+                        }
+                        .oc-card h4 {
+                            margin: 0 0 8px 0;
+                            font-size: 12.5px;
+                            font-weight: 800;
+                            color: #111111;
+                        }
+                        table.oc-items {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin-top: 20px;
+                        }
+                        table.oc-items thead th {
+                            background: #141414;
+                            color: #ffffff;
+                            font-size: 11.5px;
+                            font-weight: 700;
+                            padding: 9px 10px;
+                            text-align: left;
+                        }
+                        table.oc-items tbody td {
+                            border: 1px solid #e5e7eb;
+                            padding: 9px 10px;
+                            font-size: 11.5px;
+                            color: #111111;
+                        }
+                        .oc-totals {
+                            width: 280px;
+                            margin-left: auto;
+                            margin-top: 14px;
+                        }
+                        .oc-totals table {
+                            width: 100%;
+                            border-collapse: collapse;
+                        }
+                        .oc-totals td {
+                            border: 1px solid #e5e7eb;
+                            padding: 8px 12px;
+                            font-size: 11.5px;
+                            color: #111111;
+                        }
+                        .oc-totals tr.oc-total-final td {
+                            background: #ef6c00;
+                            color: #ffffff;
+                            font-weight: 800;
+                            font-size: 12.5px;
+                            border-color: #ef6c00;
+                        }
+                        .oc-notes {
+                            margin-top: 22px;
+                            font-size: 11px;
+                            color: #374151;
+                            line-height: 1.65;
+                        }
+                        .oc-notes strong {
+                            display: block;
+                            color: #111111;
+                            margin-bottom: 4px;
+                            font-size: 11.5px;
+                        }
+                        .oc-signatures {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 52px;
+                            gap: 60px;
+                        }
+                        .oc-sig-block {
+                            width: 250px;
+                            border-top: 1px solid #111111;
+                            padding-top: 6px;
+                            text-align: center;
+                            font-size: 11px;
+                            color: #374151;
+                        }
+                        .oc-footer {
+                            margin-top: 26px;
+                            border-top: 2px solid #ef6c00;
+                            padding-top: 8px;
+                            font-size: 10.5px;
+                            color: #4b5563;
+                            line-height: 1.45;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="oc-page">
+                        <div class="oc-banner">
+                            <div>
+                                <div class="oc-brand-title">TECHNOMAQ</div>
+                                <div class="oc-brand-sub">SOLUCIONES</div>
+                            </div>
+                            <div class="oc-doc-info">
+                                <div class="oc-doc-title">ORDEN DE COMPRA</div>
+                                <div class="oc-doc-meta">
+                                    <div><strong>No.:</strong> ${folio}</div>
+                                    <div><strong>Fecha:</strong> ${fecha}</div>
+                                    <div><strong>Pago:</strong> ${pago}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="oc-body">
+                            <div class="oc-cards">
+                                <div class="oc-card">
+                                    <h4>Proveedor</h4>
+                                    <div><strong>Empresa:</strong> ${provEmpresa}</div>
+                                    <div><strong>Dirección:</strong> ${provDireccion}</div>
+                                    <div><strong>Teléfono:</strong> ${provTelefono}</div>
+                                    <div><strong>Correo:</strong> ${provCorreo}</div>
+                                </div>
+                                <div class="oc-card">
+                                    <h4>Solicitante / Cliente</h4>
+                                    <div><strong>Cliente:</strong> ${cliente}</div>
+                                    <div><strong>Teléfono:</strong> ${telefono}</div>
+                                    <div><strong>Correo:</strong> ${correo}</div>
+                                    <div><strong>Atiende:</strong> ${atiende}</div>
+                                </div>
+                            </div>
+
+                            <table class="oc-items">
+                                <thead>
+                                    <tr>
+                                        <th style="width:42px; text-align:center;">#</th>
+                                        <th>Descripción</th>
+                                        <th style="width:90px; text-align:center;">Cantidad</th>
+                                        <th style="width:130px; text-align:right;">Precio unitario</th>
+                                        <th style="width:120px; text-align:right;">Importe</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${itemsHTML}
+                                </tbody>
+                            </table>
+
+                            <div class="oc-totals">
+                                <table>
+                                    <tr>
+                                        <td>Subtotal</td>
+                                        <td style="text-align:right;">${formatMoney(subtotal)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>IVA 16%</td>
+                                        <td style="text-align:right;">${formatMoney(iva)}</td>
+                                    </tr>
+                                    <tr class="oc-total-final">
+                                        <td>Total</td>
+                                        <td style="text-align:right;">${formatMoney(total)}</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <div class="oc-notes">
+                                <strong>Notas:</strong>
+                                <div>• El material o servicio se entrega conforme a lo solicitado en la cotización y aceptación del proveedor.</div>
+                                <div>• La presente orden de compra debe surtirse con la referencia del folio correspondiente.</div>
+                                <div>• Los precios y condiciones están sujetos a lo indicado en la cotización de origen.</div>
+                            </div>
+
+                            <div class="oc-signatures">
+                                <div class="oc-sig-block">Solicitante / Cliente</div>
+                                <div class="oc-sig-block">Autorización TECHNOMAQ</div>
+                            </div>
+
+                            <div class="oc-footer">
+                                <div>Av. de los Insurgentes oriente No. 2137, Col. Llanitos | Tepic, Nayarit</div>
+                                <div>Tel. 311 489 9474 / 331 538 0857 • administracion@technomaq.mx</div>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        function previewOrdenCompra(source) {
+            if (source === 'oc') updateCotTotals('oc');
+            else actualizarTotalesCot();
+
+            const html = buildOrdenCompraHTML(source);
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+        }
+
+        function imprimirOrdenCompra(source) {
+            if (source === 'oc') updateCotTotals('oc');
+            else actualizarTotalesCot();
+
+            const html = buildOrdenCompraHTML(source);
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 500);
+        }
+
+        function descargarOrdenCompraPDF(source) {
+            const btnId = (source === 'oc') ? 'btnDescargarOC_oc' : 'btnDescargarOCRapido';
+            const btn = document.getElementById(btnId);
+            if (btn && btn.disabled) return;
+
+            if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                alert('No se pudo cargar el generador de PDF. Verifica tu conexión a internet e intenta de nuevo.');
+                return;
+            }
+
+            if (source === 'oc') updateCotTotals('oc');
+            else actualizarTotalesCot();
+
+            const folio = (source === 'oc')
+                ? (document.getElementById('cotFolio_oc')?.value.trim() || 'OC-0001')
+                : (document.getElementById('ocFolioRapido')?.value.trim() || 'OC-0001');
+
+            const textoOriginal = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = 'Generando...'; }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = buildOrdenCompraHTML(source);
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '0';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '800px';
+            tempDiv.style.background = '#ffffff';
+            tempDiv.style.zIndex = '-1';
+            tempDiv.style.pointerEvents = 'none';
+            document.body.appendChild(tempDiv);
+
+            const limpiar = () => {
+                if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
+            };
+
+            setTimeout(() => {
+                html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: tempDiv.scrollWidth,
+                    windowHeight: tempDiv.scrollHeight
+                }).then((canvas) => {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({
+                            unit: 'mm',
+                            format: 'letter',
+                            orientation: 'portrait'
+                        });
+
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        const imgWidth = pageWidth;
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                        const imgData = canvas.toDataURL('image/png');
+
+                        let heightLeft = imgHeight;
+                        let position = 0;
+
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+
+                        while (heightLeft > 0) {
+                            position = heightLeft - imgHeight;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                        }
+
+                        pdf.save('OrdenCompra_' + folio + '.pdf');
+                        limpiar();
+                    } catch (err) {
+                        console.error('Error generando Orden de Compra PDF:', err);
+                        limpiar();
+                        alert('Ocurrió un error al generar el PDF: ' + err.message);
+                    }
+                }).catch((err) => {
+                    console.error('Error capturando Orden de Compra:', err);
+                    limpiar();
+                    alert('Ocurrió un error al generar el PDF. Intenta de nuevo.');
+                });
+            }, 300);
+        }
+
+        // ============================================================
+        //  Lógica del Menú y Generador de Contrato de Arrendamiento
+        // ============================================================
+        function toggleMenuContratoRenta() {
+            const chkRenta = document.getElementById('cotServRenta');
+            const panel = document.getElementById('menuContratoRenta');
+            if (!chkRenta || !panel) return;
+
+            if (chkRenta.checked) {
+                panel.classList.add('active');
+                inicializarValoresContrato();
+            } else {
+                panel.classList.remove('active');
+            }
+        }
+
+        function inicializarValoresContrato() {
+            const ahora = new Date();
+            const horaInput = document.getElementById('contratoHora');
+            if (horaInput && !horaInput.value) {
+                const hh = String(ahora.getHours()).padStart(2, '0');
+                const mm = String(ahora.getMinutes()).padStart(2, '0');
+                horaInput.value = `${hh}:${mm}`;
+            }
+
+            const cotFechaVal = document.getElementById('cotFecha')?.value;
+            const fechaInicioInput = document.getElementById('contratoFechaInicio');
+            const fechaFinInput = document.getElementById('contratoFechaFin');
+
+            if (fechaInicioInput && !fechaInicioInput.value) {
+                const baseDate = cotFechaVal ? new Date(cotFechaVal + 'T00:00:00') : ahora;
+                const yyyy = baseDate.getFullYear();
+                const mm = String(baseDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(baseDate.getDate()).padStart(2, '0');
+                fechaInicioInput.value = `${yyyy}-${mm}-${dd}`;
+
+                if (fechaFinInput && !fechaFinInput.value) {
+                    const nextDay = new Date(baseDate);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    const y2 = nextDay.getFullYear();
+                    const m2 = String(nextDay.getMonth() + 1).padStart(2, '0');
+                    const d2 = String(nextDay.getDate()).padStart(2, '0');
+                    fechaFinInput.value = `${y2}-${m2}-${d2}`;
+                }
+            }
+
+            const clienteNombre = document.getElementById('clienteCot')?.value || '';
+            const ineInput = document.getElementById('contratoIneNombre');
+            const compNombreInput = document.getElementById('contratoComprobanteNombre');
+            if (ineInput && !ineInput.value && clienteNombre) ineInput.value = clienteNombre;
+            if (compNombreInput && !compNombreInput.value && clienteNombre) compNombreInput.value = clienteNombre;
+
+            actualizarTotalesCot();
+        }
+
+        function calcularDiasContrato() {
+            const inicioStr = document.getElementById('contratoFechaInicio')?.value;
+            const finStr = document.getElementById('contratoFechaFin')?.value;
+            const diasInput = document.getElementById('contratoDias');
+            if (inicioStr && finStr && diasInput) {
+                const d1 = new Date(inicioStr + 'T00:00:00');
+                const d2 = new Date(finStr + 'T00:00:00');
+                const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+                diasInput.value = diff > 0 ? diff : 1;
+            }
+        }
+
+        function formatearHora12(timeStr) {
+            if (!timeStr) {
+                const now = new Date();
+                let h = now.getHours();
+                const m = String(now.getMinutes()).padStart(2, '0');
+                const ampm = h >= 12 ? 'p.m.' : 'a.m.';
+                h = h % 12 || 12;
+                return `${String(h).padStart(2, '0')}:${m} ${ampm}`;
+            }
+            const [hStr, mStr] = timeStr.split(':');
+            let h = parseInt(hStr, 10);
+            const ampm = h >= 12 ? 'p.m.' : 'a.m.';
+            h = h % 12 || 12;
+            return `${String(h).padStart(2, '0')}:${mStr} ${ampm}`;
+        }
+
+        function obtenerPartesFecha(dateStr) {
+            const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+            const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+            const d = dateStr ? new Date(dateStr + 'T00:00:00') : new Date();
+            return {
+                diaSemana: diasSemana[d.getDay()],
+                dia: d.getDate(),
+                mes: meses[d.getMonth()],
+                anio: d.getFullYear()
+            };
+        }
+
+        function buildContratoHTML() {
+            const cliente = (document.getElementById('clienteCot')?.value || '______________________').toUpperCase();
+            const celular = document.getElementById('telefonoCot')?.value || 'S/N';
+            const telFijo = document.getElementById('contratoTelFijo')?.value || '00';
+            const horaStr = formatearHora12(document.getElementById('contratoHora')?.value);
+
+            const fechaCotStr = document.getElementById('cotFecha')?.value || document.getElementById('contratoFechaInicio')?.value;
+            const fCelebracion = obtenerPartesFecha(fechaCotStr);
+            const fechaCelebracionTexto = `${fCelebracion.diaSemana}, ${fCelebracion.dia} de ${fCelebracion.mes} de ${fCelebracion.anio}`;
+
+            const fInicio = obtenerPartesFecha(document.getElementById('contratoFechaInicio')?.value);
+            const fFin = obtenerPartesFecha(document.getElementById('contratoFechaFin')?.value);
+
+            const diasNum = parseInt(document.getElementById('contratoDias')?.value) || 1;
+            const diasLetra = clConvertirEntero(diasNum).toUpperCase();
+            const duracionTexto = diasNum === 1
+                ? `UN (1) DÍA NATURAL`
+                : `${diasLetra} (${diasNum}) DÍAS NATURALES`;
+
+            const periodoTexto = `DEL DÍA ${fInicio.diaSemana.toUpperCase()} ${fInicio.dia} DE ${fInicio.mes.toUpperCase()} AL ${fFin.dia} DE ${fFin.mes.toUpperCase()} DEL ${fFin.anio}`;
+
+            const itemRows = document.querySelectorAll('#cotItemsBody tr');
+            const articulos = [];
+            itemRows.forEach(row => {
+                const desc = (row.querySelector('.cot-desc')?.value || '').trim().toUpperCase();
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                if (desc) {
+                    articulos.push({ desc, cant });
+                }
+            });
+
+            let articulosHTML = '';
+            const maxSlots = Math.max(4, articulos.length);
+            for (let i = 0; i < maxSlots; i++) {
+                if (articulos[i]) {
+                    articulosHTML += `
+                        <tr>
+                            <td style="padding:2px 0; width:65%; font-weight:700;">${articulos[i].desc}</td>
+                            <td style="padding:2px 0; font-weight:700;">CANTIDAD ${articulos[i].cant}</td>
+                        </tr>`;
+                } else {
+                    articulosHTML += `
+                        <tr>
+                            <td style="padding:2px 0; width:65%;">NO APLICA OTRO,</td>
+                            <td style="padding:2px 0;">CANTIDAD N/A</td>
+                        </tr>`;
+                }
+            }
+
+            const observaciones = (document.getElementById('contratoObservaciones')?.value || '').toUpperCase();
+            const aditamentos = (document.getElementById('contratoAditamentos')?.value || '').toUpperCase();
+            const cantAditamentos = document.getElementById('contratoCantAditamentos')?.value || '0';
+
+            const domicilioCliente = (document.getElementById('contratoDomicilioCliente')?.value || '______________________').toUpperCase();
+            const ciudadCliente = (document.getElementById('contratoCiudadCliente')?.value || 'TEPIC, NAY., NAYARIT').toUpperCase();
+            const ineNombre = (document.getElementById('contratoIneNombre')?.value || cliente).toUpperCase();
+            const tipoComprobante = (document.getElementById('contratoTipoComprobante')?.value || 'CFE (COMISION FEDERAL DE ELECTRICIDAD)').toUpperCase();
+            const comprobanteNombre = (document.getElementById('contratoComprobanteNombre')?.value || cliente).toUpperCase();
+            const comprobanteParentesco = (document.getElementById('contratoComprobanteParentesco')?.value || 'PROPIO').toUpperCase();
+
+            const refNombre = (document.getElementById('contratoRefNombre')?.value || '______________________').toUpperCase();
+            const refTel = document.getElementById('contratoRefTel')?.value || '__________';
+            const refParentesco = (document.getElementById('contratoRefParentesco')?.value || '________________').toUpperCase();
+
+            const subtotalCot = actualizarTotalesCot();
+            const montoRentaInput = parseFloat(document.getElementById('contratoMontoRenta')?.value);
+            const montoRenta = !isNaN(montoRentaInput) ? montoRentaInput : subtotalCot;
+            const montoRentaLetras = numeroALetras(montoRenta).toUpperCase();
+
+            const montoFianza = parseFloat(document.getElementById('contratoFianza')?.value) || 0;
+            const montoFianzaLetras = numeroALetras(montoFianza).toUpperCase();
+
+            const cuotaLimpieza = parseFloat(document.getElementById('contratoCuotaLimpieza')?.value) || 50;
+            const cuotaLimpiezaLetras = numeroALetras(cuotaLimpieza).toUpperCase();
+
+            return `
+                <!DOCTYPE html>
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Contrato de Arrendamiento - ${cliente}</title>
+                    <style>
+                        :root { color-scheme: light only; }
+                        * { box-sizing: border-box; }
+                        body {
+                            font-family: Arial, Helvetica, sans-serif;
+                            color: #000;
+                            background: #fff;
+                            margin: 0;
+                            padding: 0;
+                            font-size: 11.2px;
+                            line-height: 1.45;
+                            text-align: justify;
+                        }
+                        .contract-container {
+                            max-width: 780px;
+                            margin: 0 auto;
+                            padding: 24px 40px;
+                            background: #fff;
+                        }
+                        .contract-title {
+                            text-align: center;
+                            font-weight: 800;
+                            font-size: 13.5px;
+                            letter-spacing: 2px;
+                            margin-bottom: 14px;
+                        }
+                        .section-header {
+                            text-align: center;
+                            font-weight: 800;
+                            font-size: 12.5px;
+                            letter-spacing: 3px;
+                            margin: 16px 0 10px 0;
+                            page-break-after: avoid;
+                            break-after: avoid;
+                        }
+                        p {
+                            margin: 0 0 11px 0;
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                        }
+                        .clause-title {
+                            font-weight: 800;
+                            margin-top: 14px;
+                            margin-bottom: 2px;
+                            page-break-after: avoid;
+                            break-after: avoid;
+                        }
+                        .items-list {
+                            width: 100%;
+                            border-collapse: collapse;
+                            margin: 6px 0 10px 18px;
+                            font-size: 11px;
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                        }
+                        .signatures {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-top: 38px;
+                            gap: 30px;
+                            page-break-inside: avoid;
+                            break-inside: avoid;
+                        }
+                        .sig-box {
+                            flex: 1;
+                            text-align: center;
+                            font-size: 11px;
+                        }
+                        .sig-space { height: 45px; }
+                        .sig-line {
+                            border-top: 1px solid #000;
+                            width: 85%;
+                            margin: 0 auto 6px auto;
+                        }
+                        @media print {
+                            body { margin: 0; }
+                            .contract-container { padding: 12mm 15mm; max-width: 100%; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="contract-container" id="contratoRenderRoot">
+                        <div class="contract-title">C O N T R A T O &nbsp; D E &nbsp; A R R E N D A M I E N T O &nbsp; D E &nbsp; M A Q U I N A R I A</div>
+
+                        <p>
+                            EN LA CIUDAD DE TEPIC, NAYARIT A <strong>${fechaCelebracionTexto}</strong>, A LAS <strong>${horaStr}</strong>, QUE CELEBRAN POR UNA PARTE <strong>HUANG SEBASTIAN LOPEZ ROJAS</strong> EN SU CARÁCTER DE “EMPRESA” CON NOMBRE COMERCIAL <strong>TECHNOMAQ</strong>, QUIEN PARA EFECTOS DE ESTE CONTRATO SE LE DENOMINARÁ COMO <strong>“LA ARRENDADORA”</strong> Y POR OTRA PARTE POR SU PROPIO DERECHO, EL C. <strong>${cliente}</strong>, QUIEN EN LO SUCESIVO Y PARA EFECTOS DE ESTE CONTRATO SE LE DENOMINARÁ <strong>“EL ARRENDATARIO”</strong>, AL TENOR DE LAS SIGUIENTES DECLARACIONES ENMARCADAS DENTRO DE LOS NUMERALES 1770 Y 1778 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT, SUJETAN LAS SIGUIENTES;
+                        </p>
+
+                        <div class="section-header">D E C L A R A C I O N E S:</div>
+
+                        <p><strong>1.- DECLARA “HUANG SEBASTIAN LOPEZ ROJAS” COMO “LA ARRENDADORA” PARA LOS EFECTOS DEL ARTÍCULO 1784 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT.</strong></p>
+
+                        <p><strong>1.1.</strong> “HUANG SEBASTIAN LOPEZ ROJAS” DECLARA SER UNA PERSONA FISICA, PROPIETARIA DE EQUIPOS DE MAQUINARIA Y MOBILIARIO EL CUAL PONE A DISPOSICION EN “RENTA” DE EL O LOS SIGUIENTE(S) ARTÍCULO(S):</p>
+
+                        <table class="items-list">
+                            ${articulosHTML}
+                        </table>
+
+                        <p>
+                            <strong>OBSERVACIONES, ESPECIFICAR:</strong> ${observaciones}<br>
+                            <strong>OTROS ADITAMENTOS O ACCESORIOS:</strong> ${aditamentos} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>CANTIDAD</strong> ${cantAditamentos}
+                        </p>
+
+                        <p><strong>1.2.</strong> TENER DOMICILIO PARA RECIBIR CUALQUIER CLASE DE NOTIFICACIONES, ASÍ COMO DOCUMENTOS RELATIVOS AL PRESENTE CONTRATO EN AV. INSURGENTES NO. 2137 ORIENTE, COL GUSTAVO DÍAZ ORDAZ, CP 63176, TEPIC; NAYARIT.</p>
+
+                        <p><strong>2.- DECLARA “EL ARRENDATARIO” DE NOMBRE C. ${cliente} BAJO PROTESTA DE DECIR VERDAD Y PARA LOS EFECTOS DEL NUMERAL 1797 DEL CÓDIGO EN MATERIA.</strong></p>
+
+                        <p>
+                            <strong>2.1.</strong> TENER SU DOMICILIO EN <strong>${domicilioCliente} &nbsp; ${ciudadCliente}</strong>. SER DE NACIONALIDAD MEXICANA, MAYOR DE EDAD, HÁBIL PARA CONTRATAR, OBLIGARSE Y CELEBRAR CON VOLUNTAD EL PRESENTE CONTRATO DE ARRENDAMIENTO.<br>
+                            ENTREGANDO LA SIGUIENTE DOCUMENTACIÓN:<br>
+                            IDENTIFICACIÓN OFICIAL INE A SU <strong>${ineNombre}</strong> COMPROBANTE DE DOMICILIO DE <strong>${tipoComprobante}</strong> A NOMBRE DE <strong>${comprobanteNombre}</strong> CON PARENTESCO DE <strong>${comprobanteParentesco}</strong>.<br>
+                            TELEFONOS DE CONTACTO FIJO <strong>${telFijo}</strong> y/o CELULAR <strong>${celular}</strong> CITA COMO REFERENCIA PERSONAL C. <strong>${refNombre}</strong> TEL <strong>${refTel}</strong> CON PARENTEZCO <strong>${refParentesco}</strong> TENER CONOCIMIENTO Y ACEPTAR EXPRESAMENTE QUE EL ARRENDAMIENTO ES DE ÍNDOLE TEMPORAL, DEBIANDO REGRESAR EL EQUIPO A MÁS TARDAR EL DÍA SIGUIENTE EN QUE SE TERMINE LA TEMPORALIDAD PACTADA DE ACUERDO AL CONTRATO, POR LO QUE UNA VEZ CONCLUIDA LA VIGENCIA DEL PRESENTE CONTRATO CONCLUIRÁ IGUALMENTE EL DERECHO DEL USO Y GOCE DE LOS MAQUINARIA MOVILIARIO O EQUIPOS EN CALIDAD DE RENTA PARA “EL ARRENDATARIO” POR LO QUE EN LO SUCESIVO Y CONFORME AL ARTÍCULO 1840 LA PÉRDIDA O DETERIORO DE LA COSA ALQUILADA SE PRESUME SIEMPRE A CARGO DEL ARRENDATARIO, EN TANTO AL NUMERAL 1836 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT LA RENTA SE PAGARÁ CONFORME LO PREVISTO.
+                        </p>
+
+                        <p><strong>3.- POR LO QUE AMBAS PARTES DECLARAN:</strong></p>
+                        <p>
+                            QUE ES SU DESEO CELEBRAR EL PRESENTE CONTRATO DE ARRENDAMIENTO POR TIEMPO DETERMINADO DE LA MAQUINARIA DESCRITA EN EL APARTADO 1.1 DE LAS DECLARACIONES, RECONOCIÉNDOSE CON CAPACIDAD LEGAL SUFICIENTE PARA CONTRATAR, EN LOS TÉRMINOS DEL ARTÍCULO 1770 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT, POR LO QUE AMBAS PARTES ESTÁN INTERESADAS EN FORMALIZAR EL PRESENTE CONTRATO DE ARRENDAMIENTO DEL EQUIPO, MAQUINARIA O MOBILIARIO, CON EL FIN DE REGULAR SUS RELACIONES Y DE COMÚN ACUERDO LAS PARTES SUJETAN EL MISMO TENOR DE LAS SIGUIENTES:
+                        </p>
+
+                        <div class="section-header">C L Á U S U L A S:</div>
+
+                        <div class="clause-title">PRIMERA. OBJETO DEL CONTRATO.</div>
+                        <p>
+                            “LA ARRENDADORA” CEDE EN ARRENDAMIENTO EL CONJUNTO DE EQUIPO, MAQUINARIA O MOBILIARIO QUE SE HALLA DESCRITO EN EL APARTADO 1.1., EN PERFECTAS CONDICIONES DE USO Y A SU ENTERA SATISFACCIÓN PARA SERVIR EL USO CONVENIDO; ESTIPULADO EN LA FRACCIÓN PRIMERA DEL NUMERAL 1784 DEL CÓDIGO EN MATERIA.
+                        </p>
+                        <p>
+                            “EL ARRENDATARIO” ACEPTA LA MAQUINARIA CONSCIENTE Y PLENA A SERVIRSE DE LA COSA SOLAMENTE PARA EL USO CONVENIDO O CONFORME A LA NATURALEZA Y DESTINO DE ELLA, TAL Y COMO LO MENCIONA LA FRACCIÓN TERCERA DEL ARTÍCULO 1797, A SU VEZ COMPROMETIÉNDOSE A RESPONDER DE LOS PERJUICIOS QUE LA COSA ARRENDADA SUFRA POR SU CULPA O NEGLIGENCIA, EN BASE A LA FRACCIÓN SEGUNDA DEL ARTÍCULO 1797 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT.
+                        </p>
+
+                        <div class="clause-title">SEGUNDA- DURACIÓN DEL CONTRATO.</div>
+                        <p>
+                            AMBAS PARTES CONVIENEN EN QUE EL PRESENTE CONTRATO TENDRÁ UNA DURACIÓN DE <strong>${duracionTexto}</strong>, COMPRENDIDO <strong>${periodoTexto}</strong>. EN VIRTUD DE QUE EL CONTRATO SE CELEBRA POR TIEMPO DETERMINADO, UNA VEZ CONCLUIDA DICHA VIGENCIA EL ARRENDAMIENTO SE EXTINGUIRÁ DE PLENO DERECHO POR CUMPLIMIENTO, NO OBSTANTE, SI LLEGADA LA FECHA DE VENCIMIENTO NINGUNA DE LAS PARTES MANIFIESTA SU VOLUNTAD EN CONTRARIO, EL CONTRATO SE ENTENDERÁ TÁCITAMENTE RECONDUCIDO, EN TÉRMINOS DE LO DISPUESTO POR EL ARTÍCULO 1858 DEL CÓDIGO CIVIL APLICABLE, CONTINUANDO EL ARRENDAMIENTO DEL BIEN POR DIA, SEMANA O MES BAJO LAS MISMAS CONDICIONES AQUÍ ESTIPULADAS EN LA “CLAUSULA SEGUNDA”.
+                        </p>
+                        <p>
+                            “EL ARRENDATARIO” DEBERÁ AVISAR “LA ARRENDADORA” CON LA DEBIDA ANTICIPACIÓN EN CASO DE QUE DESEE OCUPAR EL EQUIPO, MOVILIARIO O MAQUINARIA RENTADA POR UN PLAZO MAYOR AL ORIGINALMENTE PACTADO.
+                        </p>
+                        <p>
+                            LA EXTINCIÓN DEL CONTRATO POR EL TRANSCURSO DEL TÉRMINO CONVENIDO O CONFORME A LAS FRACCIONES CORRESPONDIENTES DEL ARTÍCULO 1855 Y 1861 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT, NO DARÁ DERECHO A “EL ARRENDATARIO” A INDEMNIZACIÓN ALGUNA A CARGO DE “LA ARRENDADORA”.
+                        </p>
+
+                        <div class="clause-title">TERCERA- REMUNERACIÓN.</div>
+                        <p>
+                            EN CONTRAPRESTACIÓN POR EL ARRENDAMIENTO SE PACTA UNA RENTA TOTAL QUE ASCIENDE A LA CANTIDAD <strong>$ ${montoRenta.toFixed(2)} (${montoRentaLetras})</strong> ANTES DE IMPUESTOS POR EL TIEMPO SEÑALADO EN LA “CLAUSULA SEGUNDA”, LOS CUALES DEBERÁ ENTREGAR “EL ARRENDATARIO” A “LA ARRENDADORA” EN EL DOMICILIO UBICADO EN AV. INSURGENTES NO. 2137 ORIENTE, COL GUSTAVO DÍAZ ORDAZ TEPIC, NAYARIT A TRAVÉS DE DEPÓSITO BANCARIO, PAGO CON TARJETA, EFECTIVO O, COMO SE ACUERDE ENTRE LAS PARTES, COMPROMETIÉNDOSE A FIRMAR LOS RECIBOS CORRESPONDIENTES.
+                        </p>
+                        <p>
+                            EN EL SUPUESTO QUE LA RENTA CONVENIDA ANTERIORMENTE NO SEA LIQUIDADA EN LA FECHA ESTABLECIDA “EL ARRENDATARIO” DEBERÁ CUBRIR A “LA ARRENDADORA” POR LA MORA EN QUE HUBIESE INCURRIDO UN INTERÉS DE 5 % CINCO POR CIENTO, POR CADA DÍA DE ATRASO EN LOS PAGOS DE LAS REFERIDAS.
+                        </p>
+                        <p>
+                            NO OBSTANTE LO ANTERIOR, DURANTE LA VIGENCIA DEL CONTRATO LA RENTA NO SE INCREMENTARÁ, PERO SI AL FINALIZAR LA VIGENCIA DEL PRESENTE CONTRATO, “EL ARRENDATARIO” SIGUE OCUPANDO EL EQUIPO SIN AUTORIZACIÓN DE “LA ARRENDADORA”, EXPRESADA ÉSTA PARA QUE SEA VÁLIDA SÓLO MEDIANTE LA CELEBRACIÓN DE UN NUEVO CONTRATO DE ARRENDAMIENTO POR ESCRITO, DURANTE EL TIEMPO QUE SIGA OCUPADO, PAGARÁ POR CONCEPTO DE RENTA, POR MENSUALIDADES ADELANTADAS Y EN EL DOMICILIO ESPECIFICADO, CONFORME AL ARTÍCULO 1858 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT.
+                        </p>
+
+                        <div class="clause-title">CUARTA- RESCISIÓN DEL CONTRATO.</div>
+                        <p>
+                            “LA ARRENDADORA” PODRÁ RESCINDIR EL PRESENTE CONTRATO CONFORME EL ARTÍCULO 1861 Y SUS FRACCIONES CORRESPONDIENTES, EN EL SUPUESTO QUE RESULTE NO PAGADO ALGUN IMPORTE, (SI APLICA) O SE INCUMPLIERA CUALQUIERA DE LAS CONDICIONES ESTABLECIDAS EN EL PRESENTE CONTRATO, Y, POR LO TANTO, “LA ARRENDADORA” TENDRÁ DERECHO A RETIRAR LA MAQUINARIA DEL LUGAR EN QUE HAGA USO Y DISFRUTE “EL ARRENDATARIO”, SIN NECESIDAD DE ACUDIR A LA VÍA JUDICIAL.
+                        </p>
+                        <p>
+                            DEL MISMO MODO, “EL ARRENDATARIO” PODRÁ RESCINDIR EL PRESENTE CONTRATO EN EL CASO DE QUE “LA ARRENDADORA” CONFORME A LO PREVISTO EN EL ARTÍCULO 1862 DEL CÓDIGO EN MATERIA SI LA PÉRDIDA DEL USO DEL BIEN ES TOTAL, O INCLUSO PARCIAL, SIEMPRE QUE LAS REPARACIONES NECESARIAS PARA SU USO CORRECTO SE PROLONGUEN POR MAS DEL TIEMPO.
+                        </p>
+
+                        <div class="clause-title">QUINTA- PROHIBICIÓN DE SUBARRIENDOS.</div>
+                        <p>
+                            QUEDA EXPRESAMENTE PROHIBIDO A “EL ARRENDATARIO” SUBARRENDAR EN TOTALIDAD O PARTE, NI CEDER O TRASPASAR LA MAQUINARIA ARRENDADA SI NO CUENTA CON AUTORIZACIÓN EXPRESA Y POR ESCRITO DE “LA ARRENDADORA”, CONFORME LOS ARTÍCULOS 1852,1853,1854 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT; EN EL SUPUESTO QUE “EL ARRENDATARIO” INCUMPLA LA OBLIGACIÓN ASUMIDA EN ESTA CLÁUSULA CUBRIRÁ A “LA ARRENDADORA” EN CONCEPTO DE PENA CONVENCIONAL, POR TODO EL TIEMPO QUE DURE EL SUBARRENDAMIENTO Y HASTA EN TANTO EL SUBARRENDATARIO NO HAGA ENTREGA AL ARRENDADOR EL EQUIPO , MAQUINARIA O MOBILIARIO, OBJETO DE ESTE CONTRATO, UNA CANTIDAD IGUAL A LA RENTA QUE SE ENCUENTRA VIGENTE SIN EL EXPRESO CONSENTIMIENTO DE LA ARRENDADORA Y LAS VIOLACIONES A ESTA PROHIBICIÓN SERÁN CAUSA DE RESCISIÓN DEL CONTRATO ESTABLECIDO EN LA FRACCIÓN TERCERA DEL NUMERAL 1861 DEL CÓDIGO EN MENCIÓN.
+                        </p>
+
+                        <div class="clause-title">SEXTA- CONOCIMIENTO DEL ESTADO DE LA MAQUINARIA- REPARACIONES.</div>
+                        <p>
+                            “EL ARRENDATARIO” DECLARA CONOCER EL USO CORRECTO DE LOS EQUIPOS EN RENTA, DE LAS CARACTERÍSTICAS Y ESTADO DE CONSERVACIÓN DE ENTREGA, ACEPTANDO EXPRESAMENTE DE ACEPTADO, ASIMISMO, SE COMPROMETE A CUIDAR Y DAR EL USO CORRECTO DEL O LOS EQUIPOS DEBIENDO ENTREGAR A “LA ARRENDADORA” AL TÉRMINO DEL CONTRATO, LA MAQUINARIA EN EL MISMO PERFECTO ESTADO EN QUE LA RECIBE.
+                        </p>
+                        <p>
+                            LA RENTA EN CONCEPTO DE ARRENDAMIENTO DE LOS EQUIPOS DE MAQUINARIA O MOBILIARIO INCLUYE EL SERVICIO DE ASISTENCIA TÉCNICA, QUE COMPRENDE LAS REPARACIONES POR DESGASTE DE LA MAQUINARIA. ÉSTA PODRÁ, EN TODO CASO, SER INSPECCIONADA EN CUALQUIER MOMENTO POR EL PERSONAL ACREDITADO QUE CONSIDERE “LA ARRENDADORA”, EL CUAL TENDRÁ LIBRE ACCESO A LAS INSTALACIONES DONDE SE USE LA MAQUINARIA, TENIÉNDOSE A LO ESTABLECIDO EN LA FRACCIÓN SEGUNDA DEL ARTÍCULO 1797 DEL CÓDIGO EN MATERIA.
+                        </p>
+                        <p>
+                            “LA ARRENDADORA” ES LA UNICA INSTANCIA AUTORIZADA PARA REALIZAR MANTENIMIENTOS O REFACCIONAMIENTO A LOS EQUIPOS QUE PONE EN “RENTA” Y “EL ARRENDATARIO” DEBERA DE ENTERAR INMEDIATAMENTE A “LA ARRENDADORA” CUALQUIER DESPERFECTO, ANOMALIA O DAÑO EVITANDO REALIZAR ALGUNA REPARACION POR SU CUENTA.
+                        </p>
+
+                        <div class="clause-title">SÉPTIMA- FIANZA O DEPOSITO EN GARANTIA (SI APLICA)</div>
+                        <p>
+                            “EL ARRENDATARIO” ENTREGA EN ESTE ACTO LA SUMA DE <strong>$${montoFianza.toFixed(2)} (${montoFianzaLetras})</strong> MONEDA NACIONAL. EN CONCEPTO DE FIANZA O DEPOSITO EN GARANTIA, SIRVIENDO EL PRESENTE DOCUMENTO DE EFICAZ CARTA DE PAGO LA CONSTITUCIÓN DE LA PRESENTE FIANZA NO EXIME A “EL ARRENDATARIO” DEL PAGO DE LAS RENTAS EN LA FORMA Y PLAZOS ESTIPULADOS. LA EXISTENCIA DE ESTA FIANZA NO SERVIRÁ NUNCA DE PRETEXTO PARA RETRASAR EL PAGO DE LA RENTA O DE CUALQUIERA DE LAS CANTIDADES CUYO PAGO HA SUMIDO EL ARRENDATARIO CONFORME AL ARTÍCULO 2165 Y 2171 DEL CÓDIGO CIVIL PARA EL ESTADO DE NAYARIT.
+                        </p>
+
+                        <div class="clause-title">OCTAVA. EN CASO DE CONTROVERSIAS.</div>
+                        <p>
+                            “EL ARRENDATARIO” SERÁ RESPONSABLE DE LOS GASTOS Y HONORARIOS QUE SE CAUSEN CON MOTIVO DE CUALQUIER CONTROVERSIA SUSCITADA RESPECTO A LA INTERPRETACIÓN Y CUMPLIMIENTO DEL PRESENTE CONTRATO, YA SEA EN FORMA JUDICIAL O EXTRAJUDICIAL.
+                        </p>
+
+                        <div class="clause-title">NOVENA. LIMPIEZA DE LOS EQUIPOS, MAQUINARIA O MOBILIARIO</div>
+                        <p>
+                            “EL ARRENDATARIO” SERÁ RESPONSABLE DE ENTREGAR EL EQUIPO, MAQUINARIA O MOBILIARIO LO MAS LIMPIO POSIBLE, ELIMINANDO LA TIERRA, POLVO, MEZCLA U OTRO MATERIAL DERIVANDO DEL TRABAJO EJERCIDO, SIENDO EN CASO DE NO SER ASÍ, “EL ARRENDATARIO” DEBERÁ DE CUBRIR UNA CUOTA POR LIMPIEZA, MISMA QUE ASIENDE A <strong>$${cuotaLimpieza.toFixed(2)} (${cuotaLimpiezaLetras})</strong> MONEDA NACIONAL POR EQUIPO, MAQUINARIA O MOBILIARIO.
+                        </p>
+
+                        <div class="clause-title">DÉCIMA. CELEBRACIÓN DEL CONTRATO</div>
+                        <p>
+                            AMBAS PARTES MANIFIESTAN QUE MUTUAMENTE SE RECONOCEN EL CARÁCTER CON QUE COMPARECEN A LA CELEBRACIÓN DE ESTE CONTRATO, POR HABERSE JUSTIFICADO PREVIAMENTE A SATISFACCIÓN DE AMBAS PARTES.
+                        </p>
+                        <p>
+                            ENTERADAS LAS PARTES DEL CONTENIDO Y ALCANCE DE LAS OBLIGACIONES QUE ASUME EN EL PRESENTE CONTRATO Y LEÍDO QUE LES FUE, LOS SUSCRIBEN EN LA CIUDAD DE TEPIC, NAYARIT, SE MANIFESTARON CONFORMES CON EL MISMO ESTAMPANDO SU FIRMA EN SEÑAL DE ACEPTACIÓN.
+                        </p>
+
+                        <div class="signatures">
+                            <div class="sig-box">
+                                <div><strong>EN SU CALIDAD DE “LA ARRENDADORA” LA EMPRESA</strong></div>
+                                <div>HUANG SEBASTIAN LOPEZ ROJAS</div>
+                                <div class="sig-space"></div>
+                                <div class="sig-line"></div>
+                                <div><strong>LA ARRENDADORA</strong></div>
+                            </div>
+                            <div class="sig-box">
+                                <div><strong>EN SU CALIDAD DE “EL ARRENDATARIO”</strong></div>
+                                <div>&nbsp;</div>
+                                <div class="sig-space"></div>
+                                <div class="sig-line"></div>
+                                <div><strong>C . ${cliente}</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        function previewContratoRenta() {
+            const html = buildContratoHTML();
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+        }
+
+        function imprimirContratoRenta() {
+            const html = buildContratoHTML();
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 500);
+        }
+
+        // =========================================================================
+        //  Escáner de espacios en blanco para evitar cortar renglones entre páginas
+        // =========================================================================
+        function encontrarCorteLimpioY(canvas, targetY, minY) {
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const searchStart = Math.max(minY, targetY - 260);
+            const searchHeight = targetY - searchStart;
+
+            if (searchHeight <= 0) {
+                return { cutY: targetY, nextStartY: targetY };
+            }
+
+            const imgData = ctx.getImageData(0, searchStart, width, searchHeight).data;
+            const isRowWhite = new Array(searchHeight).fill(true);
+
+            for (let r = 0; r < searchHeight; r++) {
+                const rowOffset = r * width * 4;
+                for (let x = 0; x < width; x += 2) {
+                    const idx = rowOffset + (x * 4);
+                    if (imgData[idx] < 248 || imgData[idx + 1] < 248 || imgData[idx + 2] < 248) {
+                        isRowWhite[r] = false;
+                        break;
+                    }
+                }
+            }
+
+            const whiteBands = [];
+            let r = searchHeight - 1;
+            while (r >= 0) {
+                if (isRowWhite[r]) {
+                    const end = r;
+                    while (r >= 0 && isRowWhite[r]) r--;
+                    const start = r + 1;
+                    const length = end - start + 1;
+                    whiteBands.push({ start, end, length });
+                } else {
+                    r--;
+                }
+            }
+
+            const paragraphBand = whiteBands.find(b => b.length >= 16);
+            if (paragraphBand) {
+                return {
+                    cutY: searchStart + paragraphBand.start + 4,
+                    nextStartY: searchStart + paragraphBand.end - 3
+                };
+            }
+
+            const lineBand = whiteBands.find(b => b.length >= 5);
+            if (lineBand) {
+                const mid = Math.floor((lineBand.start + lineBand.end) / 2);
+                return {
+                    cutY: searchStart + mid,
+                    nextStartY: searchStart + mid
+                };
+            }
+
+            return { cutY: targetY, nextStartY: targetY };
+        }
+
+        function descargarContratoPDF() {
+            const btn = document.getElementById('btnDescargarContrato');
+            if (btn && btn.disabled) return;
+
+            if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                alert('No se pudo cargar el generador de PDF. Verifica tu conexión a internet e intenta de nuevo.');
+                return;
+            }
+
+            const folio = (document.getElementById('cotFolio')?.value || 'COT-0001').trim();
+            const textoOriginal = btn ? btn.textContent : '';
+            if (btn) { btn.disabled = true; btn.textContent = 'Generando Contrato...'; }
+
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = buildContratoHTML();
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '0';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '780px';
+            tempDiv.style.background = '#ffffff';
+            tempDiv.style.zIndex = '-1';
+            tempDiv.style.pointerEvents = 'none';
+            document.body.appendChild(tempDiv);
+
+            const limpiar = () => {
+                if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
+            };
+
+            setTimeout(() => {
+                html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    windowWidth: tempDiv.scrollWidth,
+                    windowHeight: tempDiv.scrollHeight
+                }).then((canvas) => {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({
+                            unit: 'mm',
+                            format: 'letter',
+                            orientation: 'portrait'
+                        });
+
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        const marginV = 12;
+                        const usableHeightMm = pageHeight - (marginV * 2);
+
+                        const imgWidthMm = pageWidth;
+                        const pxPerMm = canvas.width / imgWidthMm;
+                        const maxSlicePx = Math.floor(usableHeightMm * pxPerMm);
+
+                        let yOffsetPx = 0;
+                        let pageIndex = 0;
+
+                        while (yOffsetPx < canvas.height) {
+                            let cutY = canvas.height;
+                            let nextStartY = canvas.height;
+
+                            if (yOffsetPx + maxSlicePx < canvas.height) {
+                                const targetY = yOffsetPx + maxSlicePx;
+                                const corte = encontrarCorteLimpioY(canvas, targetY, yOffsetPx + 100);
+                                cutY = corte.cutY;
+                                nextStartY = corte.nextStartY;
+                            }
+
+                            const currentSlicePx = cutY - yOffsetPx;
+                            if (currentSlicePx <= 0) break;
+
+                            const sliceCanvas = document.createElement('canvas');
+                            sliceCanvas.width = canvas.width;
+                            sliceCanvas.height = currentSlicePx;
+
+                            const ctx = sliceCanvas.getContext('2d');
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+                            ctx.drawImage(
+                                canvas,
+                                0, yOffsetPx, canvas.width, currentSlicePx,
+                                0, 0, canvas.width, currentSlicePx
+                            );
+
+                            const sliceData = sliceCanvas.toDataURL('image/png');
+                            const sliceHeightMm = currentSlicePx / pxPerMm;
+
+                            if (pageIndex > 0) pdf.addPage();
+                            pdf.addImage(sliceData, 'PNG', 0, marginV, imgWidthMm, sliceHeightMm);
+
+                            yOffsetPx = nextStartY;
+                            pageIndex++;
+                        }
+
+                        pdf.save('Contrato_Arrendamiento_' + folio + '.pdf');
+                        limpiar();
+                    } catch (err) {
+                        console.error('Error generando el contrato PDF:', err);
+                        limpiar();
+                        alert('Ocurrió un error al generar el PDF del contrato: ' + err.message);
+                    }
+                }).catch((err) => {
+                    console.error('Error en html2canvas:', err);
+                    limpiar();
+                    alert('Ocurrió un error al generar el PDF del contrato.');
+                });
+            }, 300);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const clienteInput = document.getElementById('clienteCot');
+            if (clienteInput) {
+                clienteInput.addEventListener('input', function() {
+                    const ineInput = document.getElementById('contratoIneNombre');
+                    const compInput = document.getElementById('contratoComprobanteNombre');
+                    if (ineInput && !ineInput.dataset.edited) ineInput.value = this.value;
+                    if (compInput && !compInput.dataset.edited) compInput.value = this.value;
+                });
+            }
+            ['contratoIneNombre', 'contratoComprobanteNombre'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', function() { this.dataset.edited = 'true'; });
+            });
+            const montoContrato = document.getElementById('contratoMontoRenta');
+            if (montoContrato) {
+                montoContrato.addEventListener('input', function() { this.dataset.manual = 'true'; });
+            }
+
+            const fechaOcInput = document.getElementById('cotFecha_oc');
+            if (fechaOcInput && !fechaOcInput.value) {
+                fechaOcInput.value = obtenerFechaISOActual();
+            }
+        });
+
+        // ============================================================
+        //  Generador de Cotización Original
+        // ============================================================
+        function buildCotizacionHTML(prefix, forDownload) {
+            const usePrefix = prefix ? ('_' + prefix) : '';
+            const folioEl = document.getElementById('cotFolio' + usePrefix);
+            const fechaEl = document.getElementById('cotFecha' + usePrefix);
+            const metodoEl = document.getElementById('cotMetodoPago' + usePrefix);
+            const clienteEl = document.getElementById('clienteCot' + usePrefix);
+            const telefonoEl = document.getElementById('telefonoCot' + usePrefix);
+            const correoEl = document.getElementById('correoCot' + usePrefix);
+            const atiendeEl = document.getElementById('atiendeCot' + usePrefix);
+
+            const folio = folioEl ? folioEl.value || 'COT-0001' : 'COT-0001';
+            const fecha = fechaEl ? fechaEl.value || new Date().toLocaleDateString('es-ES') : new Date().toLocaleDateString('es-ES');
+            const metodo = metodoEl ? metodoEl.value : '';
+            const rows = document.querySelectorAll('#' + (prefix ? 'cotItemsBody_' + prefix : 'cotItemsBody') + ' tr');
+            let itemsHTML = '';
+            let subtotal = 0;
+            let primerDescripcion = '';
+            rows.forEach((row, idx) => {
+                const desc = row.querySelector('.cot-desc')?.value || '';
+                const cant = parseFloat(row.querySelector('.cot-cant')?.value) || 0;
+                const precio = parseFloat(row.querySelector('.cot-precio')?.value) || 0;
+                const total = cant * precio;
+                subtotal += total;
+                if (idx === 0) primerDescripcion = desc;
+                itemsHTML += `
+                    <tr>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:center;">${idx + 1}</td>
+                        <td style="padding:6px;border:1px solid #ddd;">${desc}</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:center;">${cant}</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:center;">Unidad</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:right;">${formatMoney(precio)}</td>
+                        <td style="padding:6px;border:1px solid #ddd;text-align:right;">${formatMoney(total)}</td>
+                    </tr>
+                `;
+            });
+
+            const ivaCheckEl = document.getElementById('cotAplicaIVA' + usePrefix);
+            const aplicaIVA = ivaCheckEl ? ivaCheckEl.checked : !prefix;
+            const iva = aplicaIVA ? subtotal * 0.16 : 0;
+            const total = subtotal + iva;
+            const totalLetras = numeroALetras(total);
+
+            const pagoOpcionesBase = ['Efectivo', 'Transferencia', 'Tarjeta'];
+            let pagoResaltar = '';
+            if (metodo === 'Efectivo') pagoResaltar = 'Efectivo';
+            else if (metodo === 'Transferencia') pagoResaltar = 'Transferencia';
+            else if (metodo === 'Tarjeta') pagoResaltar = 'Tarjeta';
+            else if (metodo === 'Crédito') pagoResaltar = 'Crédito';
+            const pagoOpciones = (pagoResaltar === 'Crédito') ? [...pagoOpcionesBase, 'Crédito'] : pagoOpcionesBase;
+            const condicionPagoHTML = pagoOpciones.map(op => op === pagoResaltar
+                ? `<mark style="background:#fff59d;padding:0 2px;">${op}</mark>`
+                : op).join(' / ');
+
+            const SERVICIOS_MAP = [
+                { id: 'Refacciones', label: 'Refacciones' },
+                { id: 'Tecnico', label: 'Servicio técnico' },
+                { id: 'Preventivo', label: 'Mantenimiento Preventivo' },
+                { id: 'Correctivo', label: 'Mantenimiento correctivo' },
+                { id: 'Renta', label: 'Renta de equipo' },
+                { id: 'Venta', label: 'Venta de equipo' },
+                { id: 'Corte', label: 'Corte / maquila' },
+                { id: 'Diseno', label: 'Diseño' },
+                { id: 'Consumibles', label: 'Consumibles' },
+                { id: 'CNC', label: 'CNC' }
+            ];
+            const tipoServicioHTML = SERVICIOS_MAP.map(s => {
+                const el = document.getElementById('cotServ' + s.id + usePrefix);
+                const marcado = el ? el.checked : false;
+                return `<span>${marcado ? '☑' : '☐'} ${s.label}</span>`;
+            }).join('\n                                ');
+
+            const logoSection = forDownload ? '' : '<img src="LogoT.png" alt="logo" style="height:64px; object-fit:contain" />';
+
+            const html = `
+                <!doctype html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Cotización ${folio}</title>
+                    <style>
+                        :root { color-scheme: light only; }
+                        * { box-sizing: border-box; }
+                        html, body { background:#ffffff; color-scheme: light only; }
+                        body{font-family: 'Helvetica Neue', Arial, Helvetica, sans-serif; color:#111; margin:0; padding:0}
+                        .page{max-width:800px; margin:0 auto; padding:0; background:#ffffff}
+                        .inner{padding:18px 28px 4px 28px}
+                        .top-bar{background:#ef6c00;height:14px}
+                        .accent-bar{background:#ef6c00;height:8px;margin-top:6px}
+                        .header{display:flex;justify-content:space-between;align-items:flex-start;padding:8px 0 0 0;background:#ffffff}
+                        .logo {display:flex;align-items:center}
+                        .logo img{height:60px;margin-right:14px}
+                        .company-name{font-size:24px;font-weight:800;color:#222;line-height:1.1}
+                        .title{color:#111;font-weight:900;font-size:26px;text-align:right}
+                        .meta{font-size:11px;text-align:right;color:#222;margin-top:4px;line-height:1.5}
+                        .meta .folio{color:#ef6c00;font-weight:700}
+                        .boxes{display:flex;margin-top:10px;gap:12px}
+                        .box{border:1px solid #cfcfcf;background:#f7f7f7;padding:8px 12px;font-size:11.5px;flex:1;line-height:1.5}
+                        .box h4{margin:0 0 4px 0;font-size:12px;color:#111;font-weight:800;letter-spacing:.3px}
+                        .servicio-line{margin-top:8px;font-size:12px;color:#222}
+                        .tipo-servicio{border:1px solid #cfcfcf;padding:6px 10px;margin-top:8px;font-size:11.5px;color:#333}
+                        .tipo-servicio strong{display:block;margin-bottom:4px;font-size:12px;color:#111}
+                        .tipo-servicio .chk-row{display:flex;flex-wrap:wrap;gap:14px;row-gap:4px}
+                        .detalle-title{margin-top:10px;font-weight:800;font-size:12.5px;color:#111;border-bottom:2px solid #111;padding-bottom:4px}
+                        table.items{width:100%;border-collapse:collapse;margin-top:6px}
+                        table.items thead th{background:#111;color:#fff;padding:7px 8px;text-align:left;font-size:11.5px}
+                        table.items td{padding:6px 8px;border:1px solid #e6e6e6;font-size:11.5px;color:#222}
+                        .notes{font-size:11px;color:#333;margin-top:6px}
+                        .notes strong{font-size:11.5px;color:#111}
+                        .notes ul{margin:6px 0 0 16px;padding:0}
+                        .bottom-row{display:flex;margin-top:4px;gap:14px}
+                        .summary{width:300px;margin-left:auto;flex-shrink:0}
+                        .summary table{width:100%;border-collapse:collapse;border:1px solid #ddd}
+                        .summary td{padding:7px 10px;font-size:11.5px;border-bottom:1px solid #eee}
+                        .total-row td{background:#ef6c00;color:#fff;font-weight:800;font-size:13px}
+                        .total-letras{background:#f7a35c;color:#fff;font-size:10.5px;font-style:italic;text-align:center;padding:5px 8px}
+                        .foot-boxes{display:flex;gap:12px;margin-top:12px}
+                        .foot-box{flex:1;border:1px solid #cfcfcf;padding:8px 12px;font-size:11px;line-height:1.5;color:#333}
+                        .foot-box h4{margin:0 0 4px 0;font-size:12px;color:#111;font-weight:800}
+                        .sign{display:flex;justify-content:space-between;margin-top:14px;padding:0 10px}
+                        .sig-block{text-align:center;font-size:11px;width:220px}
+                        .sig-line{border-top:1px solid #333;margin-bottom:6px;height:1px}
+                        .footer{background:#ef6c00;padding:6px;color:#fff;text-align:center;margin-top:8px;font-size:10.5px;font-style:italic}
+                        .footer .addr{display:block;font-size:9.5px;font-style:normal;margin-top:1px}
+                        .bottom-accent{background:#ef6c00;height:6px}
+                    </style>
+                </head>
+                <body>
+                    <div class="top-bar"></div>
+                    <div class="page">
+                        <div class="inner">
+                        <div class="header">
+                            <div class="logo">
+                                ${logoSection}
+                                <div>
+                                    <div class="company-name">TechnoMaQ</div>
+                                    <div style="font-size:10.5px;color:#777;letter-spacing:1px">SOLUTIONS</div>
+                                </div>
+                            </div>
+                            <div style="text-align:right">
+                                <div class="title">COTIZACIÓN</div>
+                                <div class="meta">Folio: <span class="folio">${folio}</span><br>Fecha: ${fecha} &nbsp;|&nbsp; Vigencia: 15 Días<br>Moneda: MXN</div>
+                            </div>
+                        </div>
+                        <div class="accent-bar" aria-hidden="true"></div>
+
+                        <div class="boxes">
+                            <div class="box">
+                                <h4>INFORMACIÓN DEL CLIENTE</h4>
+                                <div><strong>Cliente:</strong> ${clienteEl ? clienteEl.value : ''}</div>
+                                <div><strong>Teléfono:</strong> ${telefonoEl ? telefonoEl.value : ''}</div>
+                                <div><strong>Correo:</strong> ${correoEl && correoEl.value ? correoEl.value : 's/d'}</div>
+                                <div><strong>Condición de pago:</strong> ${condicionPagoHTML}</div>
+                            </div>
+                            <div class="box">
+                                <h4>DATOS DE LA EMPRESA</h4>
+                                <div><strong>Empresa:</strong> TECHNOMAQ SOLUCIONES</div>
+                                <div><strong>Atiende:</strong> ${atiendeEl ? atiendeEl.value : ''}</div>
+                                <div><strong>Teléfono:</strong> 311 489 9474 / 331 538 0857</div>
+                                <div><strong>Dirección:</strong> Av. de los Insurgentes oriente No. 2137, Col. Llanitos, Tepic, Nayarit</div>
+                                <div><strong>Correo:</strong> administracion@technomaq.mx</div>
+                            </div>
+                        </div>
+
+                        <div class="servicio-line">Por medio de la presente, ponemos a su consideración la siguiente propuesta económica${primerDescripcion ? ': ' + primerDescripcion : ''}</div>
+
+                        <div class="tipo-servicio">
+                            <strong>TIPO DE SERVICIO</strong>
+                            <div class="chk-row">
+                                ${tipoServicioHTML}
+                            </div>
+                        </div>
+
+                        <div class="detalle-title">DESCRIPCIÓN A DETALLE DE LA PROPUESTA</div>
+
+                        <table class="items">
+                            <thead>
+                                <tr>
+                                    <th style="width:36px">Ítem</th>
+                                    <th>Descripción</th>
+                                    <th style="width:70px;text-align:center">Cantidad</th>
+                                    <th style="width:70px;text-align:center">Unidad</th>
+                                    <th style="width:120px;text-align:right">Precio unitario</th>
+                                    <th style="width:120px;text-align:right">Importe</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHTML}
+                            </tbody>
+                        </table>
+
+                        <div class="bottom-row">
+                            <div style="flex:1">
+                                <div class="notes">
+                                    <strong>NOTAS DE LA PROPUESTA</strong>
+                                    <ul>
+                                        ${aplicaIVA ? '<li>En caso de no requerir factura omita el costo sin IVA agregado.</li><li>Para facturación enviar Constancia Fiscal, Uso de CFDI, método de pago y correo electrónico.</li>' : '<li>Precio sin IVA incluido.</li>'}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="summary">
+                                <table>
+                                    <tr>
+                                        <td>Subtotal</td>
+                                        <td style="text-align:right">${formatMoney(subtotal)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Descuento</td>
+                                        <td style="text-align:right"></td>
+                                    </tr>
+                                    ${aplicaIVA ? `
+                                    <tr>
+                                        <td>IVA 16%</td>
+                                        <td style="text-align:right">${formatMoney(iva)}</td>
+                                    </tr>` : ''}
+                                    <tr class="total-row">
+                                        <td>TOTAL</td>
+                                        <td style="text-align:right">${formatMoney(total)}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="total-letras">${totalLetras}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="foot-boxes">
+                            <div class="foot-box">
+                                <h4>CONDICIONES COMERCIALES</h4>
+                                <div>→ Precios expresados en moneda nacional (MXN).</div>
+                                <div>→ Precios sujetos a cambios por disponibilidad, especificaciones nuevas o variación de mercado.</div>
+                                <div>→ La aceptación deberá confirmarse por escrito u orden de compra.</div>
+                                <div>→ Entrega, renta o servicio sujeto a agenda y disponibilidad.</div>
+                            </div>
+                            <div class="foot-box">
+                                <h4>PAGO / FACTURACIÓN</h4>
+                                <div><strong>Banco:</strong> BANAMEX</div>
+                                <div><strong>Titular:</strong> TECHNOMAQ SOLUCIONES</div>
+                                <div><strong>Cuenta:</strong> 6379146</div>
+                                <div><strong>CLABE:</strong> 002320701663791461</div>
+                                <div><strong>RFC:</strong> TSO250626ETA</div>
+                            </div>
+                        </div>
+                        </div>
+
+                        <div class="sign">
+                            <div class="sig-block">
+                                <div style="height:24px"></div>
+                                <div class="sig-line"></div>
+                                <div>HUANG SEBASTIAN LOPEZ ROJAS</div>
+                            </div>
+                            <div class="sig-block">
+                                <div style="height:24px"></div>
+                                <div class="sig-line"></div>
+                                <div>ACEPTACIÓN DEL CLIENTE</div>
+                            </div>
+                        </div>
+
+                        <div class="footer">TECHNOMAQ "LA MEJOR MAQUINARIA CUANDO LA NECESITEN"<span class="addr">Av. de los Insurgentes oriente No. 2137 Col. Llanitos | Tepic, Nayarit. Tel. de Oficina 311 489 9474</span></div>
+                        <div class="bottom-accent" aria-hidden="true"></div>
+                    </div>
+                </body>
+                </html>
+            `;
+
+            return html;
+        }
+
+        function previewCotizacion(prefix) {
+            if (prefix) {
+                updateCotTotals(prefix);
+                const html = buildCotizacionHTML(prefix);
+                const w = window.open('', '_blank');
+                w.document.open();
+                w.document.write(html);
+                w.document.close();
+                w.focus();
+                return;
+            }
+            actualizarTotalesCot();
+            const html = buildCotizacionHTML();
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+        }
+
+        function generarCotizacionPDF(arg) {
+            let prefix = undefined;
+            if (typeof arg === 'string') {
+                prefix = arg;
+            } else if (arg && arg.preventDefault) {
+                arg.preventDefault();
+            }
+
+            if (prefix) {
+                updateCotTotals(prefix);
+                const html = buildCotizacionHTML(prefix);
+                const w = window.open('', '_blank');
+                w.document.open();
+                w.document.write(html);
+                w.document.close();
+                w.focus();
+                setTimeout(() => { w.print(); }, 500);
+                return;
+            }
+
+            actualizarTotalesCot();
+            const html = buildCotizacionHTML();
+            const w = window.open('', '_blank');
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 500);
+        }
+
+        function descargarCotizacionPDF(prefix){
+            const btn = document.getElementById(prefix ? 'cotBtnDescargar_' + prefix : 'cotBtnDescargar');
+            if (btn && btn.disabled) return;
+
+            if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
+                alert('No se pudo cargar el generador de PDF. Verifica tu conexión a internet e intenta de nuevo.');
+                return;
+            }
+
+            if(prefix){ updateCotTotals(prefix); } else { actualizarTotalesCot(); }
+
+            const folioEl = document.getElementById(prefix ? 'cotFolio_' + prefix : 'cotFolio');
+            const folio = (folioEl?.value || 'COT-0001').trim();
+
+            const textoOriginal = btn ? btn.textContent : '';
+            if(btn){ btn.disabled = true; btn.textContent = 'Generando...'; }
+
+            const tempDiv = document.createElement('div');
+            const htmlContent = buildCotizacionHTML(prefix, true);
+            tempDiv.innerHTML = htmlContent;
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '0';
+            tempDiv.style.top = '0';
+            tempDiv.style.width = '800px';
+            tempDiv.style.background = 'white';
+            tempDiv.style.padding = '0';
+            tempDiv.style.margin = '0';
+            tempDiv.style.zIndex = '-1';
+            tempDiv.style.pointerEvents = 'none';
+            document.body.appendChild(tempDiv);
+
+            const limpiar = () => {
+                if (document.body.contains(tempDiv)) document.body.removeChild(tempDiv);
+                if(btn){ btn.disabled = false; btn.textContent = textoOriginal; }
+            };
+
+            setTimeout(() => {
+                html2canvas(tempDiv, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: false,
+                    backgroundColor: '#ffffff',
+                    windowWidth: tempDiv.scrollWidth,
+                    windowHeight: tempDiv.scrollHeight,
+                    onclone: (clonedDoc) => {
+                        clonedDoc.querySelectorAll('img').forEach((img) => {
+                            if (!img.getAttribute('src')) img.remove();
+                        });
+                    }
+                }).then((canvas) => {
+                    try {
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({
+                            unit: 'mm',
+                            format: 'letter',
+                            orientation: 'portrait'
+                        });
+
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+                        const imgWidth = pageWidth;
+                        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                        const imgData = canvas.toDataURL('image/png');
+
+                        let heightLeft = imgHeight;
+                        let position = 0;
+
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+
+                        while (heightLeft > 0) {
+                            position = heightLeft - imgHeight;
+                            pdf.addPage();
+                            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                        }
+
+                        pdf.save('Cotizacion_' + folio + '.pdf');
+                        limpiar();
+                    } catch (err) {
+                        console.error('Error generando el PDF:', err);
+                        limpiar();
+                        alert('Ocurrió un error al generar el PDF: ' + err.message);
+                    }
+                }).catch((err) => {
+                    console.error('Error capturando el contenido con html2canvas:', err);
+                    limpiar();
+                    alert('Ocurrió un error al generar el PDF. Intenta de nuevo.');
+                });
+            }, 300);
+        }
+
+        document.addEventListener('input', function(e){
+            actualizarTotalesCot();
+            ['celosia', 'bordado', 'oc'].forEach(pref => updateCotTotals(pref));
+        });
+
+        document.addEventListener('DOMContentLoaded', function(){
+            switchCotTab('general');
+            ['', 'celosia', 'bordado', 'oc'].forEach(p => actualizarBotonIVA(p));
+            toggleMenuContratoRenta();
+        });
+
+        function toggleIVACot(prefix){
+            const suf = prefix ? ('_' + prefix) : '';
+            const chk = document.getElementById('cotAplicaIVA' + suf);
+            if (!chk) return;
+            chk.checked = !chk.checked;
+            actualizarBotonIVA(prefix);
+        }
+
+        function actualizarBotonIVA(prefix){
+            const suf = prefix ? ('_' + prefix) : '';
+            const chk = document.getElementById('cotAplicaIVA' + suf);
+            const btn = document.getElementById('cotBtnIVA' + suf);
+            if (!chk || !btn) return;
+            if (chk.checked) {
+                btn.textContent = 'IVA: Incluido (16%)';
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('btn-success');
+            } else {
+                btn.textContent = 'IVA: No incluido';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+            }
+        }
+
+        function eliminarItemCot(button){
+            const row = button.closest('tr');
+            if(row) row.remove();
+            if (document.querySelector('#cotItemsBody')) actualizarTotalesCot();
+            else updateCotTotals();
+        }
+
+        // ============================================================
+        //  Calculadora de Celosía — MDF calibre 14, $2,800.00 por m²
+        // ============================================================
+        const PRECIO_M2_CELOSIA = 2800.00;
+
+        function calcularCelosia() {
+            const ancho    = parseFloat(document.getElementById('celosiaAncho').value) || 0;
+            const alto     = parseFloat(document.getElementById('celosiaAlto').value)  || 0;
+            const unidad   = document.getElementById('celosiaUnidad').value;
+            const piezas   = parseInt(document.getElementById('celosiaCantidadPiezas').value) || 1;
+
+            const anchoM = unidad === 'cm' ? ancho / 100 : ancho;
+            const altoM  = unidad === 'cm' ? alto  / 100 : alto;
+
+            const m2Unitario = anchoM * altoM;
+            const m2Total     = m2Unitario * piezas;
+            const total       = m2Total * PRECIO_M2_CELOSIA;
+
+            document.getElementById('celosiaResultadoM2').textContent =
+                `Superficie: ${m2Total.toFixed(2)} m² (${piezas} pieza${piezas !== 1 ? 's' : ''} de ${m2Unitario.toFixed(2)} m² c/u)`;
+            document.getElementById('celosiaResultadoTotal').textContent =
+                `Total: $${total.toFixed(2)}`;
+
+            return { ancho, alto, unidad, piezas, m2Unitario, m2Total, total };
+        }
+
+        function agregarCelosiaCalculada() {
+            const datos = calcularCelosia();
+
+            if (!datos.ancho || !datos.alto) {
+                alert('Ingresa el ancho y alto de la pieza antes de agregar.');
+                return;
+            }
+
+            const tbody = document.getElementById('cotItemsBody_celosia');
+            if (!tbody) return;
+
+            const descripcion = `Celosia MDF cal. 14 — ${datos.ancho}${datos.unidad} x ${datos.alto}${datos.unidad} (${datos.m2Unitario.toFixed(2)} m² c/u)`;
+            const precioUnitario = datos.m2Unitario * PRECIO_M2_CELOSIA;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="cot-desc" value="${descripcion}"></td>
+                <td><input type="number" class="cot-cant" value="${datos.piezas}" min="1" onchange="updateCotTotals('celosia')"></td>
+                <td><input type="number" class="cot-precio" value="${precioUnitario.toFixed(2)}" step="0.01" min="0" onchange="updateCotTotals('celosia')"></td>
+                <td class="cot-total">$0.00</td>
+                <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('celosia');">Eliminar</button></td>
+            `;
+            tbody.appendChild(row);
+            updateCotTotals('celosia');
+
+            document.getElementById('celosiaAncho').value = '';
+            document.getElementById('celosiaAlto').value = '';
+            document.getElementById('celosiaCantidadPiezas').value = '1';
+            calcularCelosia();
+        }
+
+        ['celosiaAncho','celosiaAlto','celosiaUnidad','celosiaCantidadPiezas'].forEach(id => {
+            document.addEventListener('DOMContentLoaded', function() {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', calcularCelosia);
+            });
+        });
+
+        // ============================================================
+        //  Calculadora de Servicio de Bordado (por medida cm² y colores)
+        // ============================================================
+        const TABULADOR_BORDADO = [
+            { id: 1, min: 7,  max: 10, label: '7 a 10 cm²',  varios: 150.00, uno: 95.00  },
+            { id: 2, min: 11, max: 15, label: '11 a 15 cm²', varios: 200.00, uno: 180.00 },
+            { id: 3, min: 16, max: 20, label: '16 a 20 cm²', varios: 250.00, uno: 220.00 },
+            { id: 4, min: 21, max: 30, label: '21 a 30 cm²', varios: 300.00, uno: 260.00 }
+        ];
+
+        function obtenerTarifaBordado(areaCm2) {
+            if (!areaCm2 || areaCm2 <= 0) return null;
+            // Se redondea al entero más cercano para cubrir decimales intermedios (ej. 10.4 -> 10, 10.6 -> 11)
+            const medidaRef = Math.round(areaCm2);
+            if (medidaRef < 7 || medidaRef > 30) return null;
+            return TABULADOR_BORDADO.find(r => medidaRef >= r.min && medidaRef <= r.max) || null;
+        }
+
+        function resaltarTarjetaBordado(idActivo) {
+            [1, 2, 3, 4].forEach(id => {
+                const card = document.getElementById('tarifaCard_' + id);
+                if (card) {
+                    card.classList.toggle('activa', id === idActivo);
+                }
+            });
+        }
+
+        function calcularBordado(origen) {
+            const anchoEl  = document.getElementById('bordadoAncho');
+            const altoEl   = document.getElementById('bordadoAlto');
+            const areaEl   = document.getElementById('bordadoAreaCm2');
+            const colorEl  = document.getElementById('bordadoTipoColor');
+            const piezasEl = document.getElementById('bordadoCantidadPiezas');
+
+            const ancho  = parseFloat(anchoEl?.value) || 0;
+            const alto   = parseFloat(altoEl?.value)  || 0;
+            const tipoColor = colorEl?.value || 'varios';
+            const piezas = parseInt(piezasEl?.value) || 1;
+
+            // Si el usuario escribe en Ancho o Alto, calcular automáticamente el área en cm²
+            if (origen === 'dimensiones') {
+                if (ancho > 0 && alto > 0) {
+                    areaEl.value = (ancho * alto).toFixed(2).replace(/\.00$/, '');
+                } else if (!ancho && !alto) {
+                    areaEl.value = '';
+                }
+            } else if (origen === 'area') {
+                // Si el usuario edita directamente los cm², limpiar ancho y alto para evitar confusión
+                if (anchoEl) anchoEl.value = '';
+                if (altoEl) altoEl.value = '';
+            }
+
+            const areaCm2 = parseFloat(areaEl?.value) || 0;
+            const tarifa = obtenerTarifaBordado(areaCm2);
+
+            const infoSpan = document.getElementById('bordadoResultadoInfo');
+            const unitSpan = document.getElementById('bordadoResultadoUnitario');
+            const totalStrong = document.getElementById('bordadoResultadoTotal');
+
+            if (!areaCm2) {
+                resaltarTarjetaBordado(null);
+                if (infoSpan) infoSpan.textContent = 'Área: 0.00 cm²';
+                if (unitSpan) unitSpan.textContent = 'Precio unitario: $0.00';
+                if (totalStrong) totalStrong.textContent = 'Total: $0.00';
+                return { areaCm2: 0, ancho, alto, tipoColor, piezas, tarifa: null, precioUnitario: 0, total: 0 };
+            }
+
+            if (!tarifa) {
+                resaltarTarjetaBordado(null);
+                const msgRango = Math.round(areaCm2) < 7
+                    ? `Área: ${areaCm2.toFixed(2)} cm² (Menor al mínimo de 7 cm²)`
+                    : `Área: ${areaCm2.toFixed(2)} cm² (Excede el máximo de 30 cm²)`;
+                if (infoSpan) infoSpan.textContent = msgRango;
+                if (unitSpan) unitSpan.textContent = 'Precio unitario: Fuera de rango';
+                if (totalStrong) totalStrong.textContent = 'Total: $0.00';
+                return { areaCm2, ancho, alto, tipoColor, piezas, tarifa: null, precioUnitario: 0, total: 0 };
+            }
+
+            resaltarTarjetaBordado(tarifa.id);
+            const precioUnitario = tipoColor === 'varios' ? tarifa.varios : tarifa.uno;
+            const total = precioUnitario * piezas;
+
+            if (infoSpan) {
+                infoSpan.textContent = `Área: ${areaCm2.toFixed(2)} cm² (Rango: ${tarifa.label})`;
+            }
+            if (unitSpan) {
+                unitSpan.textContent = `Precio unitario: $${precioUnitario.toFixed(2)}`;
+            }
+            if (totalStrong) {
+                totalStrong.textContent = `Total: $${total.toFixed(2)}`;
+            }
+
+            return { areaCm2, ancho, alto, tipoColor, piezas, tarifa, precioUnitario, total };
+        }
+
+        function agregarBordadoCalculado() {
+            const datos = calcularBordado();
+
+            if (!datos.areaCm2) {
+                alert('Ingresa el ancho y alto en cm, o bien la medida directa en cm² antes de agregar.');
+                return;
+            }
+
+
+
+            const tbody = document.getElementById('cotItemsBody_bordado');
+            if (!tbody) return;
+
+            const etiquetaColor = datos.tipoColor === 'varios' ? 'Varios colores' : 'Un solo color';
+            const detalleMedida = (datos.ancho > 0 && datos.alto > 0)
+                ? `${datos.ancho}cm x ${datos.alto}cm (${datos.areaCm2.toFixed(2)} cm² — De ${datos.tarifa.label})`
+                : `${datos.areaCm2.toFixed(2)} cm² (De ${datos.tarifa.label})`;
+
+            const descripcion = `Servicio de bordado (${etiquetaColor}) — ${detalleMedida}`;
+
+            // Si la primera fila está completamente vacía, la reutilizamos; si no, agregamos una nueva
+            const filas = tbody.querySelectorAll('tr');
+            if (filas.length === 1) {
+                const descActual = filas[0].querySelector('.cot-desc')?.value.trim();
+                const precioActual = parseFloat(filas[0].querySelector('.cot-precio')?.value) || 0;
+                if (!descActual && precioActual === 0) {
+                    tbody.innerHTML = '';
+                }
+            }
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" class="cot-desc" value="${descripcion}"></td>
+                <td><input type="number" class="cot-cant" value="${datos.piezas}" min="1" oninput="updateCotTotals('bordado')" onchange="updateCotTotals('bordado')"></td>
+                <td><input type="number" class="cot-precio" value="${datos.precioUnitario.toFixed(2)}" step="0.01" min="0" oninput="updateCotTotals('bordado')" onchange="updateCotTotals('bordado')"></td>
+                <td class="cot-total">$0.00</td>
+                <td><button type="button" class="btn btn-danger" onclick="this.closest('tr').remove(); updateCotTotals('bordado');">Eliminar</button></td>
+            `;
+            tbody.appendChild(row);
+            updateCotTotals('bordado');
+
+            // Limpiar la calculadora para el siguiente bordado
+            document.getElementById('bordadoAncho').value = '';
+            document.getElementById('bordadoAlto').value = '';
+            document.getElementById('bordadoAreaCm2').value = '';
+            document.getElementById('bordadoCantidadPiezas').value = '1';
+            calcularBordado();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            ['bordadoAncho', 'bordadoAlto'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', () => calcularBordado('dimensiones'));
+            });
+            const areaEl = document.getElementById('bordadoAreaCm2');
+            if (areaEl) areaEl.addEventListener('input', () => calcularBordado('area'));
+
+            ['bordadoTipoColor', 'bordadoCantidadPiezas'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('input', () => calcularBordado());
+                if (el) el.addEventListener('change', () => calcularBordado());
+            });
+        });
+    </script>
+</body>
+</html>
